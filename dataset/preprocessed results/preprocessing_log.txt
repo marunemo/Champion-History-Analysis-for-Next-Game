@@ -1,0 +1,108 @@
+LOL Draft Embedding — Preprocessing Pipeline v2
+DDragon Version: 15.19.1
+
+============================================================
+STEP 1: DDragon Feature Matrix
+  챔피언 수  : 171
+  feature 차원: 17  (tag×6, info×4, stats×7)
+  컬럼 목록  : ['tag_Fighter', 'tag_Tank', 'tag_Mage', 'tag_Assassin', 'tag_Marksman', 'tag_Support', 'info_attack', 'info_defense', 'info_magic', 'info_difficulty', 'hp', 'armor', 'spellblock', 'attackdamage', 'attackspeed', 'movespeed', 'hpregen']
+
+============================================================
+STEP 2: Oracle's Elixir 2025
+  파일: 2025_LoL_esports_match_data_from_OraclesElixir.csv
+  전체 행 수       : 120,636
+  team row 수      : 20,106  (예상: 전체의 ~1/6)
+  병합 게임 수     : 10,028
+  result 분포      :
+    0: 4,684
+    1: 5,344
+  리그 분포 (상위 10):
+    LPL                 : 805
+    LCK                 : 555
+    LCKC                : 541
+    LAS                 : 489
+    EM                  : 438
+    LJL                 : 374
+    LFL                 : 315
+    LEC                 : 306
+    PRM                 : 303
+    PCS                 : 303
+
+============================================================
+STEP 3: Solo Rank  [전체]
+  MatchTbl 행 수         : 279,423
+  TeamMatchTbl 행 수     : 214,330
+  ChampionTbl 챔피언 수  : 173
+  RankTbl 티어 목록      : 0=Unranked, 1=Iron, 2=Bronze, 3=Silver, 4=Gold, 5=Platinum, 6=Emerald, 7=Diamond, 8=Master, 9=Grandmaster, 10=Challenger
+  QueueType 필터 (CLASSIC): 279,423 → 190,788
+  필터 후 TeamMatch 행 수: 149,717
+  최종 게임 수           : 149,717
+  result 분포            :
+    0: 75,793
+    1: 73,924
+  티어 분포 (RankName)   :
+    Unranked        : 36,463
+    Master          : 30,439
+    Diamond         : 17,648
+    Platinum        : 16,515
+    Gold            : 16,498
+    Emerald         : 14,245
+    Silver          : 9,746
+    Bronze          : 3,557
+    Grandmaster     : 2,297
+    Iron            : 1,875
+    Challenger      : 434
+
+============================================================
+STEP 3: Solo Rank  [GM+Challenger]
+  MatchTbl 행 수         : 279,423
+  TeamMatchTbl 행 수     : 214,330
+  ChampionTbl 챔피언 수  : 173
+  RankTbl 티어 목록      : 0=Unranked, 1=Iron, 2=Bronze, 3=Silver, 4=Gold, 5=Platinum, 6=Emerald, 7=Diamond, 8=Master, 9=Grandmaster, 10=Challenger
+  QueueType 필터 (CLASSIC): 279,423 → 190,788
+  RankName 필터          : ['Grandmaster', 'Challenger']  (190,788 → 2,846)
+  필터 후 TeamMatch 행 수: 2,731
+  최종 게임 수           : 2,731
+  result 분포            :
+    0: 1,334
+    1: 1,397
+  티어 분포 (RankName)   :
+    Grandmaster     : 2,297
+    Challenger      : 434
+
+============================================================
+STEP 4: Champion LabelEncoder 구성
+  미지원 챔피언 제거: {'Zaahen'}  (1개)
+  통합 챔피언 풀 크기: 192
+
+============================================================
+STEP 4 (encode): 각 DataFrame 인코딩
+  [Pro OE2025] 인코딩 후 행 수: 10,008  (제거: 20건)
+  [Solo All] 인코딩 후 행 수: 137,146  (제거: 12571건)
+  [Solo GM+Chall] 인코딩 후 행 수: 2,566  (제거: 165건)
+
+============================================================
+STEP 5: DDragon Embedding Init Weight 생성
+  DDragon 매칭 성공: 192 / 192  (0벡터: 0)
+  챔피언 수   : 192
+  feature 차원: 17  →  embed_dim: 32
+  weight shape: (192, 32)
+  저장 파일   : embedding_init.pt
+
+============================================================
+EXPORT 결과물
+  df_pro_enc.csv                : (10008, 14)  columns=['gameid', 'league', 'patch', 'blue_p1', 'blue_p2', 'blue_p3', 'blue_p4', 'blue_p5', 'result', 'red_p1', 'red_p2', 'red_p3', 'red_p4', 'red_p5']
+  df_solo_all_enc.csv           : (137146, 15)
+  df_solo_high_enc.csv          : (2566, 15)
+  embedding_init.pt             : shape=(192, 32)
+  label_encoder.pkl             : 192 챔피언
+
+============================================================
+최종 요약
+  프로 게임 수         : 10,008
+  솔로랭크 전체        : 137,146
+  솔로랭크 GM+Chall    : 2,566
+  챔피언 풀            : 192
+  임베딩 차원          : 32
+
+다음 단계: DraftEmbeddingFFNN 모델 정의 및 학습 루프
