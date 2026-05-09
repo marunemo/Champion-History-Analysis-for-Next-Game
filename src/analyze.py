@@ -28,6 +28,9 @@ DATA_FILES = {
     "B": "data/processed/df_solo_all_enc.csv",
     "C": "data/processed/df_solo_high_enc.csv",
     "D": "data/processed/df_solo_low_enc.csv",
+    "A_tl": "data/processed/df_pro_enc.csv",
+    "C_tl": "data/processed/df_solo_high_enc.csv",
+    "D_tl": "data/processed/df_solo_low_enc.csv",
 }
 
 ARCH_MAP = {"ffnn": DraftEmbeddingFFNN, "cnn": DraftEmbeddingCNN}
