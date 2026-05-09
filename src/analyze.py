@@ -24,10 +24,10 @@ TAG_COLORS = {
 }
 
 DATA_FILES = {
-    "A": "data/df_pro_enc.csv",
-    "B": "data/df_solo_all_enc.csv",
-    "C": "data/df_solo_high_enc.csv",
-    "D": "data/df_solo_low_enc.csv",
+    "A": "data/processed/df_pro_enc.csv",
+    "B": "data/processed/df_solo_all_enc.csv",
+    "C": "data/processed/df_solo_high_enc.csv",
+    "D": "data/processed/df_solo_low_enc.csv",
 }
 
 ARCH_MAP = {"ffnn": DraftEmbeddingFFNN, "cnn": DraftEmbeddingCNN}
@@ -45,7 +45,7 @@ def load_checkpoint(arch, model_name):
 
 
 def load_tag_map():
-    with open("dataset/champion.json") as f:
+    with open("data/raw/champion.json") as f:
         data = json.load(f)["data"]
     with open("weights/label_encoder.pkl", "rb") as f:
         le = pickle.load(f)
@@ -219,7 +219,7 @@ def plot_pca(arch, model_name, tag_map, le):
     pfx = _prefix(arch, model_name)
 
     # DDragon info for correlation
-    with open("dataset/champion.json") as f:
+    with open("data/raw/champion.json") as f:
         cdata = json.load(f)["data"]
     name_to_info = {}
     for v in cdata.values():
