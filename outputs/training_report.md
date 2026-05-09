@@ -60,9 +60,37 @@ Embedding(192, 32) → stack(10, 32) → Conv1d(32,64,k=3) → ReLU → Conv1d(6
 ### 데이터량 효과
 - Model B(137K)가 여전히 최저 val_loss — 데이터량이 임베딩 품질의 핵심 결정 요인
 
+## Transfer Learning (B → A/C/D)
+
+### 설계
+Model B(솔로 전체, 137K)에서 학습된 임베딩을 초기화로 사용하여 A/C/D를 fine-tune.
+`--init-weights weights/embedding_B_learned.pt`로 DDragon init 대신 B 학습 임베딩 사용.
+그 외 하이퍼파라미터는 baseline과 동일.
+
+### Results
+
+| Model | Dataset | Init | Arch | Best Epoch | Val Loss | Val Acc | vs Baseline |
+|-------|---------|------|------|-----------|----------|---------|-------------|
+| A_tl | Pro | B learned | FFNN | 2 | 0.6914 | 52.5% | -0.6%p |
+| A_tl | Pro | B learned | CNN | 2 | 0.6922 | 53.2% | +0.4%p |
+| C_tl | Solo GM+Chall | B learned | FFNN | 2 | 0.6937 | 49.2% | **-3.5%p** |
+| C_tl | Solo GM+Chall | B learned | CNN | 5 | 0.6928 | 51.4% | 0.0%p |
+| D_tl | Solo Iron~Silver | B learned | FFNN | 3 | 0.6892 | 54.6% | **+2.8%p** |
+| D_tl | Solo Iron~Silver | B learned | CNN | 5 | 0.6909 | 52.2% | +0.9%p |
+
+### Observations
+
+- **D_tl(저티어) FFNN +2.8%p**: B의 솔로랭크 범용 메타 지식이 저티어 fine-tune에 유효.
+  val_loss도 전체 모델 중 최저(0.6892).
+- **C_tl(고티어) FFNN -3.5%p**: B의 "평균적 솔로랭크 메타"가 고티어 특유의
+  어쌔신-다이버 메타를 희석. 소스-타겟 도메인 거리가 너무 큼.
+- **A_tl(프로) 중립**: 프로와 솔로랭크는 질적으로 다른 환경.
+  CNN에서 소폭 개선(53.2%)이나 오차 범위 내.
+- Transfer learning 효과는 **소스-타겟 도메인 유사성**에 의존함을 실험적으로 확인.
+
 ## Checkpoint Format
-`outputs/models/{arch}_{model}.pt`:
+`outputs/models/{baseline|transfer}/{arch}_{model}.pt`:
 - `arch`: "ffnn" 또는 "cnn"
 - `model_state_dict`: 학습된 모델 가중치
-- `w_before`: DDragon 초기화 임베딩 (Δweight 분석용)
+- `w_before`: 초기화 임베딩 (baseline: DDragon, transfer: B learned)
 - `best_val_loss`, `best_val_acc`, `epoch`
