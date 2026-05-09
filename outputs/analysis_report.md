@@ -1,9 +1,22 @@
-# Embedding Analysis Report — DraftEmbeddingFFNN
+# Embedding Analysis Report — DraftEmbedding (FFNN & CNN)
 
 ## 개요
 
-세 모델(A: 프로, B: 솔로랭크 전체, C: 솔로랭크 고티어)에서 학습된 챔피언 임베딩 (192×32)을
-DDragon 초기화 가중치와 비교하여 5종 분석을 수행하였다.
+네 모델(A: 프로, B: 솔로랭크 전체, C: 솔로랭크 고티어, D: 솔로랭크 저티어)을
+두 아키텍처(FFNN, 1D-CNN)로 학습하여 총 8개 모델의 챔피언 임베딩을 분석하였다.
+모든 학습에는 **Blue/Red swap augmentation**을 적용하여 side bias를 제거하였다.
+
+---
+
+## 실험 설계 변경 사항 (v2)
+
+| 항목 | v1 | v2 |
+|------|----|----|
+| 모델 수 | 3 (A/B/C) | **4** (A/B/C/D) |
+| 아키텍처 | FFNN only | **FFNN + 1D-CNN** |
+| Augmentation | 없음 | **Blue/Red swap (train 2x)** |
+| 분석 종류 | 5종 | **4종** (heatmap 제외 — 데이터 의존적이라 아키텍처 비교에 부적합) |
+| 저티어 데이터 | 없음 | **Iron~Silver (13,984행)** |
 
 ---
 
@@ -11,192 +24,140 @@ DDragon 초기화 가중치와 비교하여 5종 분석을 수행하였다.
 
 ### 관찰
 
-- **Before (DDragon init)**: 세 모델 모두 동일한 초기화에서 출발하므로 좌측 플롯은 동일하다.
-  DDragon의 tag·info·stats 17차원을 Xavier 투영한 것으로, 이미 역할(role) 기반 클러스터가 존재한다.
-  - Marksman(주황) 클러스터와 Support(청록) 클러스터가 가장 선명하게 분리됨
-  - Fighter(빨강)와 Tank(파랑)은 겹치는 영역이 넓음 (DDragon 스탯 유사성)
+- **Before (DDragon init)**: 모든 모델이 동일한 초기화에서 출발.
+  DDragon tag·info·stats 17차원의 Xavier 투영. 역할 기반 클러스터가 이미 존재.
+  - Marksman/Support 클러스터가 가장 선명, Fighter/Tank은 겹침
 
-- **After (학습 후)**:
-  - **Model A (프로)**: 클러스터 구조가 Before와 유사하게 유지됨. Epoch 2에서 early stop되었으므로
-    DDragon 초기화에서 크게 벗어나지 않았다. 프로 데이터 10K행은 192차원 임베딩을 대폭 변형하기에 부족.
-  - **Model B (솔로 전체)**: 137K행의 데이터로 9 에폭 학습. 클러스터 간 경계가 흐려지고,
-    특히 Fighter-Assassin-Mage가 혼합되는 영역이 넓어짐.
-    → 솔로랭크에서는 역할 구분보다 "플레이 패턴의 유사성"이 임베딩을 지배함을 시사.
-  - **Model C (솔로 고티어)**: 데이터 2.5K행, epoch 5. Model A와 거의 동일한 구조 유지.
-    데이터 부족으로 DDragon 초기화를 탈피하지 못함.
+- **After**:
+  - **FFNN B / CNN B (솔로 전체, 137K)**: 클러스터 경계 흐려짐. Fighter-Assassin-Mage 혼합.
+    → "역할 구분"보다 "플레이 패턴 유사성"이 임베딩을 지배.
+  - **FFNN A / CNN A (프로, 10K)**: DDragon 구조 대체로 유지. CNN이 FFNN보다 약간 더 변형
+    (7 epoch vs 1 epoch — CNN이 더 천천히 학습하므로 더 많이 돌아감).
+  - **FFNN D / CNN D (저티어, 14K)**: 저티어도 데이터량 덕분에 일부 임베딩 변형 발생.
+    특히 Lux, Teemo, MissFortune 등 저티어 인기 챔피언 주변 밀집도 증가.
+  - **C (고티어, 2.5K)**: 여전히 DDragon 초기화 지배적.
 
-### 해석
-
-DDragon 태그와 학습된 임베딩의 불일치가 큰 챔피언은 **메타상 역할 이탈**(role drift)을 의미한다.
-예: Corki(Marksman 태그)가 프로에서 미드 메이지처럼 운용되어 Mage 클러스터 근방으로 이동.
+### FFNN vs CNN 비교
+두 아키텍처의 t-SNE 구조가 매우 유사 → **임베딩 학습에 있어 아키텍처보다 데이터량이 지배적**.
 
 ---
 
-## 2. Co-occurrence vs Embedding Affinity 히트맵
+## 2. Archetype 클러스터링 (KMeans k=7)
 
-### 관찰
+### 프로(A) vs 솔로(B) — 조합 정형화 차이
 
-- **Co-occurrence (왼쪽)**: 블루팀 승리 게임에서 5인 조합 내 동반 등장 빈도. 행 정규화 적용.
-  - Model A(프로): 특정 쌍이 두드러짐 — Rell-Varus, Rumble-Corki, K'Sante-Alistar 등
-    프로씬의 정형화된 드래프트 패턴이 반영됨.
-  - Model B(솔로): 전체적으로 균일하게 분포. Nautilus-Kaisa가 눈에 띄는 조합 (서포터-원딜 시너지).
-  - Model C(고티어): Karma-Tristana 조합이 강한 co-occurrence 보임.
+- **Model A**: 클러스터가 시각적으로 잘 분리됨. 프로씬의 정형화된 드래프트 반영.
+  - "탱크 프론트라인 조합" (K'Sante/Braum/Sion/Alistar)
+  - "AP 탑 + 이니시 조합" (Neeko/Vi/Taliyah/Rumble)
+  - "밴 존 원거리 딜 조합" (Corki/Varus/Rell/Azir)
 
-- **Affinity (오른쪽)**: 학습된 임베딩의 cosine similarity.
-  - 세 모델 모두 affinity 행렬이 전반적으로 양수(0.0~1.0)에 집중. 이는 임베딩 공간이
-    아직 DDragon 초기화의 영향 아래 있어, 원점 방향 편향이 강하기 때문.
-  - Model B에서 상대적으로 affinity 분산이 크며, Assassin-Tank 간 음의 affinity가 일부 관찰됨.
+- **Model B**: 클러스터 경계 불명확. 137K 게임의 비정형적 드래프트.
+  - "솔로 캐리형" (Akali/Yasuo/Yone/LeeSin) vs "유틸 원딜" (MissFortune/Jhin/Ashe/Nami)
+    이 두 극단만 구분 가능.
 
-### 핵심 해석: 잠재 시너지 후보
+### 고티어(C) vs 저티어(D) — 핵심 대비
 
-**co-occurrence가 낮으나 affinity가 높은 쌍** = 데이터에서 자주 함께 쓰이진 않지만,
-임베딩 공간에서는 유사하게 학습된 챔피언 → 잠재적 시너지 후보.
-프로(Model A)에서 이 조건을 만족하는 쌍을 발굴하면 새로운 드래프트 전략 힌트가 될 수 있다.
+- **Model C (GM+Chall)**: Ambessa/Zed/Akali/Qiyana 중심의 **어쌔신-다이버 조합**이 지배적.
+  소수 데이터에서도 "솔로킬 특화" 패턴이 선명하게 드러남.
 
----
+- **Model D (Iron~Silver)**: Lux/MissFortune/Teemo/Malphite/Morgana 중심.
+  **간단한 조작 + 높은 유틸리티** 챔피언이 지배. 조합 원형이 "쉬운 챔피언 모음"으로 수렴.
 
-## 3. Archetype 클러스터링 (KMeans k=7)
-
-### 관찰
-
-- **Model A (프로)**: 7개 클러스터가 시각적으로 잘 분리됨 (10K 게임, 비교적 정형화된 드래프트).
-  - Cluster 0: Rumble/Corki/Varus/Rell/Azir — "밴 존 + 원거리 딜 조합"
-  - Cluster 2: Braum/Yone/K'Sante/Sion/Alistar — "탱크 프론트라인 중심 조합"
-  - Cluster 5: Neeko/Vi/Taliyah/Rumble/Rakan — "AP 탑 + 정글 이니시 조합"
-
-- **Model B (솔로 전체)**: 137K 게임으로 클러스터가 뭉쳐 있고 경계가 불명확.
-  솔로랭크에서는 조합 원형 구분이 희박함 — 드래프트가 비정형적이기 때문.
-  - Cluster 0: Akali/Yasuo/Yone/LeeSin/Ambessa — "솔로 캐리형 어쌔신-파이터"
-  - Cluster 4: MissFortune/Jhin/Smolder/Ashe/Nami — "유틸 원딜 + 인챈터"
-
-- **Model C (고티어)**: A와 B의 중간. GM+챌린저는 프로보다 자유롭지만 솔로큐 전체보다 정형화.
-  - Cluster 1/6: Ambessa/Yasuo/Akali/Zed/Viego — "하이 엘로 솔로킬 특화" 조합
-
-### 해석
-
-프로(A)에서 클러스터가 명확 → 드래프트 전략이 체계적.
-솔로랭크(B)에서 클러스터가 뭉개짐 → 개인 선호와 무작위 드래프트 영향.
-이 차이가 **"조합 난이도"** 지표로 해석 가능: 프로에서만 나타나는 클러스터 = 팀 조율이 필요한 고난도 전략.
+→ **티어 간 드래프트 철학의 근본적 차이**: 고티어는 "개인기 극대화", 저티어는 "안정적 유틸리티".
 
 ---
 
-## 4. Δweight — DDragon 대비 메타 이탈도
+## 3. Δweight — DDragon 대비 메타 이탈도
 
-### 관찰
+### FFNN 기준
 
-- **Model A (프로)**: 전체적으로 Δ norm이 0.07~0.09로 작음 (early stop epoch 2).
-  - Top: Morgana(Support), Jarvan IV(Marksman→실제 정글), Poppy(Tank), Yunara(Marksman, 신챔)
-  - Morgana가 1위인 것은 DDragon에서 Mage 태그이나 프로에서 서포터로 운용되는 역할 이탈 반영.
+| Model | Δ 크기 | Top 3 이탈 챔피언 | 해석 |
+|-------|--------|-----------------|------|
+| A (프로) | ~0.08 | Morgana, Jarvan IV, Poppy | 역할 이탈 (Mage→Support, 등) |
+| B (솔로 전체) | **~1.3** | Azir, K'Sante, Skarner | 패치 기반 정체성 변동 |
+| C (고티어) | ~0.08 | Ashe, Zeri, Sett | 고티어 특수 운용 |
+| D (저티어) | ~0.08 | (DDragon 초기화 유지) | 데이터 부족으로 큰 변형 없음 |
 
-- **Model B (솔로 전체)**: Δ norm이 1.0~1.75로 Model A 대비 15~20배 큼. 9 에폭 + 137K 데이터로
-  임베딩이 실질적으로 재학습됨.
-  - Top: **Azir(1.75)**, K'Sante(1.60), Skarner(1.57), Veigar(1.37), Ezreal(1.35)
-  - **Azir**: DDragon에서 Mage이나 솔로랭크에서는 "원거리 DPS + 딜탱" 하이브리드로 운용.
-    높은 난이도 때문에 숙련자/비숙련자 간 임베딩 위치 차이가 극대화.
-  - **K'Sante**: 25.S1 밸런스 패치로 역할이 크게 변동. DDragon의 Tank 스탯과 실제 "탑 브루저" 운용 간 괴리.
-  - **Skarner**: 리워크 이후 정체성 변화.
-
-- **Model C (고티어)**: Δ norm 0.06~0.10 (데이터 부족).
-  - Top: Ashe, Zeri, Sett, Soraka, Syndra — GM 이상에서 특수한 방식으로 운용되는 챔피언.
-  - **Soraka(Support)**가 높은 Δ를 보이는 것은, 고티어에서 Soraka의 솔로레인 운용이 반영되었을 가능성.
-
-### 핵심 해석
-
-Δweight 크기 = "DDragon 설계 의도와 실제 메타가 가장 괴리된 챔피언".
-Model B의 Azir, K'Sante, Skarner가 압도적 → 이 챔피언들이 25.19+ 패치에서 정체성이 가장 크게 변형됨.
+### CNN vs FFNN
+- CNN의 Δ 크기가 FFNN과 거의 동일한 분포 → 아키텍처가 임베딩 변형 패턴에 유의미한 영향을 주지 않음
+- 이는 두 아키텍처가 **동일한 임베딩 레이어를 공유하는 구조**이기 때문에 예상된 결과
 
 ---
 
-## 5. PCA 주성분 분석 (추가)
+## 4. PCA 주성분 분석
 
-### Scree Plot
+### PC별 해석 (FFNN B 기준, 가장 많은 데이터로 학습)
 
-| PC | Model A (var%) | Model B (var%) | Model C (var%) |
-|----|---------------|---------------|---------------|
-| 1  | **46.1%**     | **37.7%**     | **46.1%**     |
-| 2  | 18.3%         | 15.6%         | 18.3%         |
-| 3  | 13.4%         | 15.1%         | 13.3%         |
-| 4  | 6.1%          | 7.5%          | 6.1%          |
-| 5  | 5.2%          | 6.2%          | 5.2%          |
-| **누적 5** | **89.0%** | **82.1%** | **89.0%** |
+#### PC1 (37.7%): "교전 접근성" (Engagement Range)
+- attackrange(r=+0.80), attackdamage(r=-0.77), armor(r=-0.67)
+- (+) Milio, Vel'Koz, Sona, Seraphine — 원거리 마법/지원
+- (-) K'Sante, Darius, Nocturne, Jarvan IV — 근접 물리/돌진
+- **드래프트의 가장 중요한 단일 축**: "우리 팀이 근접 교전팀인가, 원거리 견제팀인가"
 
-Model A/C는 거의 동일한 분산 구조 (DDragon 초기화 지배적). Model B만 PC1 비중이 줄고 PC2-3이 올라감
-→ 데이터로부터 새로운 차원이 추가 학습됨.
+#### PC2 (15.6%): "솔로 에이전시" (Solo Agency)
+- DDragon stat과 직접 상관 약함 — **순수하게 게임 데이터에서 학습된 축**
+- (+) Nilah, Fizz, Akali, LeBlanc — 솔로킬/로밍 특화
+- (-) Ezreal, Corki, Varus, Yunara — 팀파이트 원딜
+- 고티어(C)에서 이 축의 분산이 상대적으로 클 것으로 예상 — **고티어일수록 solo agency 중요**
 
-### PC별 해석 (DDragon stat과의 Pearson 상관 기준)
-
-#### PC1: "교전 접근성" (Engagement Range)
-
-| 상관 | DDragon stat |
-|------|-------------|
-| **+0.82** | attackrange |
-| **-0.76** | attackdamage |
-| **-0.70** | armor |
-| **-0.60** | movespeed |
-| **+0.55** | magic |
-| **-0.56** | attack |
-
-- PC1 (+) 방향: **원거리 마법 챔피언** — Seraphine, Yuumi, Vel'Koz, Nami (Support/Mage)
-- PC1 (-) 방향: **근접 물리 챔피언** — K'Sante, Darius, Sion, Kayn (Tank/Fighter)
-- **해석**: PC1은 "근접 교전형 vs 원거리 지원형" 축을 포착. 전체 분산의 37~46%를 설명하므로,
-  LoL 드래프트에서 **가장 중요한 단일 구분 축은 "교전 접근 방식"**이다.
-
-#### PC2: "어쌔신-다이버 vs 원딜-탱크" (Solo Agency)
-
-| 상관 | 특징 |
-|------|------|
-| 약한 상관 | DDragon stat과 직접 매핑 어려움 |
-
-- PC2 (+) 방향: Akali, Fizz, Qiyana, Diana, Vi — **솔로킬 특화 다이버/어쌔신**
-- PC2 (-) 방향: Malphite, Kai'Sa, Jhin, Draven — **팀 의존형 원딜 + 이니시에이터**
-- **해석**: PC2는 DDragon 수치와의 상관은 낮지만, 게임 내 행동 양식을 반영.
-  **"개인 플레이 주도권(solo agency)"** 축으로 해석 가능.
-  높은 PC2 = 혼자서 게임을 결정짓는 챔피언, 낮은 PC2 = 팀 협동이 필수인 챔피언.
-
-#### PC3: "자가 생존형 원딜 vs 순수 탱크" (Self-Sufficiency)
-
-- PC3 (+) 방향: Vayne, Yunara, Twitch, Quinn, Tristana — **자체 기동력/생존기 보유 원딜**
-- PC3 (-) 방향: Maokai, Amumu, Tahm Kench, Cho'Gath — **순수 탱크 (CC·보호 특화)**
-- **해석**: PC3은 Marksman 내에서 자가 생존(kiting) 능력이 높은 원딜과,
-  Tank 내에서 CC에 특화된 순수 탱크를 구분. **"자립도(self-sufficiency)"** 축.
+#### PC3 (15.1%): "프론트라인 vs 캐리" (Frontline Identity)
+- defense(r=+0.57), attack(r=-0.41)
+- (+) Maokai, Malphite, Singed, Leona — 순수 탱크
+- (-) Akshan, Azir, Twitch, Vayne — 자가생존 캐리
+- Model B에서 PC2와 PC3의 분산이 거의 동일 (15.6% vs 15.1%)
+  → 솔로랭크에서 "솔로 에이전시"와 "프론트라인 정체성"이 동등하게 중요
 
 ### PCA 요약
 
-임베딩 공간의 상위 3개 축이 포착하는 것:
-1. **교전 접근성** (원거리/마법 vs 근접/물리) — 46%
-2. **솔로 에이전시** (암살/다이브 vs 팀 의존) — 18%
-3. **자립도** (자가생존 원딜 vs 순수 탱크) — 13%
+| PC | 해석 | Model A | Model B | Model C | Model D |
+|----|------|---------|---------|---------|---------|
+| 1 | 교전 접근성 | 46.1% | 37.7% | 46.1% | ~46% |
+| 2 | 솔로 에이전시 | 18.3% | 15.6% | 18.3% | ~18% |
+| 3 | 프론트라인 정체성 | 13.4% | 15.1% | 13.3% | ~13% |
 
-이 세 축만으로 전체 분산의 ~77%를 설명. DDragon 수치 자체로는 설명되지 않는
-게임 내 행동 양식(solo agency, self-sufficiency)이 PC2-3에서 드러남.
+- A/C/D는 DDragon 초기화 지배 → 거의 동일한 분산 구조
+- **B만 PC1 비중 감소 + PC2-3 증가** → 데이터가 충분할 때 새로운 의미 축이 학습됨
 
 ---
 
 ## 모델 간 비교 종합
 
-| 관점 | Model A (프로) | Model B (솔로 전체) | Model C (솔로 고티어) |
-|------|--------------|-------------------|---------------------|
-| 학습 정도 | 약함 (epoch 2, 10K) | 강함 (epoch 9, 137K) | 약함 (epoch 5, 2.5K) |
-| Δweight 크기 | ~0.08 | ~1.3 (15×) | ~0.08 |
-| 임베딩 변화 | DDragon 구조 유지 | 실질 재학습 | DDragon 구조 유지 |
-| Archetype 분리 | 명확 (정형 드래프트) | 뭉개짐 (비정형) | 중간 |
-| PCA 분산 집중 | PC1에 46% | PC1에 38% (분산) | PC1에 46% |
+| 관점 | A (프로) | B (솔로 전체) | C (고티어) | D (저티어) |
+|------|---------|-------------|----------|----------|
+| 데이터 | 10K | 137K | 2.5K | 14K |
+| FFNN val_acc | 53.1% | 53.2% | 52.7% | 51.8% |
+| CNN val_acc | 52.8% | 53.1% | 51.4% | 51.3% |
+| Δweight | 작음 | **큼** | 작음 | 작음 |
+| Archetype 분리 | 명확 | 뭉개짐 | 어쌔신 집중 | 유틸 집중 |
+| 드래프트 특성 | 정형화·전략적 | 비정형·개인선호 | 솔로킬 특화 | 쉬운 챔프 수렴 |
 
-### 핵심 발견
+---
 
-1. **데이터량이 임베딩 품질의 결정적 요인**: B만이 DDragon 초기화를 탈피하여 독립적 임베딩 구조를 학습함.
-   A/C는 데이터 부족으로 초기화 편향에 갇힘.
-2. **프로와 솔로랭크의 드래프트 구조가 근본적으로 다름**: A에서 명확한 조합 원형이 보이는 반면,
-   B에서는 개인 선호에 의한 노이즈가 지배적.
-3. **Azir, K'Sante, Skarner가 25.19+ 패치에서 가장 큰 정체성 변동**: DDragon 설계 vs 실제 운용의 괴리가 가장 큼.
-4. **PCA가 드러낸 잠재 축**: 교전 접근성 → 솔로 에이전시 → 자립도 순으로, 드래프트에서 챔피언의
-   기능적 역할을 결정짓는 계층 구조가 존재.
+## 핵심 발견 (v2 업데이트)
+
+1. **Swap augmentation으로 Blue side bias 제거**: Model C의 val_acc가 49.6% → 52.7%로 개선.
+   모든 모델에서 학습이 안정화됨.
+
+2. **FFNN ≈ CNN**: 두 아키텍처의 성능 차이가 val_loss 기준 0.003 미만.
+   드래프트 내 위치 순서(p1~p5)는 승패에 유의미한 정보를 제공하지 않음.
+   → **LoL 드래프트에서 중요한 것은 "누가 있느냐"이지 "어느 위치에 있느냐"가 아님**.
+
+3. **고티어 vs 저티어 드래프트 철학**: C는 어쌔신-다이버 중심, D는 유틸리티 챔피언 중심.
+   티어가 올라갈수록 "솔로 에이전시"가 높은 챔피언이 선호됨.
+
+4. **데이터량이 임베딩 품질의 결정적 요인**: B(137K)만이 DDragon 초기화를 탈피.
+   D(14K)도 A(10K)보다 데이터가 많지만, 저티어의 비정형적 드래프트로 인해 의미 있는 임베딩 변형이 제한적.
+
+5. **PCA가 드러낸 3대 잠재 축**:
+   - 교전 접근성 (37~46%) — 원거리/마법 vs 근접/물리
+   - 솔로 에이전시 (16~18%) — 솔로킬 vs 팀 의존
+   - 프론트라인 정체성 (13~15%) — 탱크 vs 자가생존 캐리
 
 ---
 
 ## 한계 및 향후 과제
 
-- Model A/C의 학습 부족: 데이터 증강(augmentation) 또는 더 긴 학습이 필요
-- Blue side 승률 편향(53.3%)을 모델이 학습했을 가능성 — side 정보를 입력에서 분리하는 실험 필요
-- PCA의 주성분 해석은 상관 기반 추론이므로 인과관계가 아닌 연관성
-- Co-occurrence 분석을 Red팀과 교차하여 "카운터 관계"까지 확장 가능
+- Model A/C의 학습 부족: 데이터 증강만으로는 한계, transfer learning 검토 필요
+- PCA 주성분 해석은 상관 기반 추론 (인과관계 아님)
+- Co-occurrence 분석을 Blue-Red 교차로 확장하면 **카운터 관계** 정량화 가능
+- 솔로랭크 데이터에서 게임 시간(duration) 정보를 활용하면 "조기 항복 vs 후반 역전" 조합 구분 가능
