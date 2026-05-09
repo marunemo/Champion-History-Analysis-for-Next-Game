@@ -66,7 +66,8 @@ def main():
 
     best_val_loss = float("inf")
     patience_counter = 0
-    save_path = f"outputs/models/{args.arch}_{args.name}.pt"
+    model_dir = "transfer" if args.name.endswith("_tl") else "baseline"
+    save_path = f"outputs/models/{model_dir}/{args.arch}_{args.name}.pt"
 
     pbar = tqdm(range(1, args.epochs + 1), desc=f"{args.arch.upper()} {args.name}")
     for epoch in pbar:

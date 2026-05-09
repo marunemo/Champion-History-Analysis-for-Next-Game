@@ -36,8 +36,12 @@ DATA_FILES = {
 ARCH_MAP = {"ffnn": DraftEmbeddingFFNN, "cnn": DraftEmbeddingCNN}
 
 
+def _model_dir(model_name):
+    return "transfer" if model_name.endswith("_tl") else "baseline"
+
+
 def load_checkpoint(arch, model_name):
-    path = f"outputs/models/{arch}_{model_name}.pt"
+    path = f"outputs/models/{_model_dir(model_name)}/{arch}_{model_name}.pt"
     ckpt = torch.load(path, weights_only=False, map_location="cpu")
     ModelClass = ARCH_MAP[arch]
     model = ModelClass()
@@ -91,7 +95,7 @@ def plot_tsne(arch, model_name, tag_map, le):
     axes[1].legend(loc="upper right", fontsize=8)
 
     plt.tight_layout()
-    plt.savefig(f"outputs/figures/tsne_{pfx}.png", dpi=150)
+    plt.savefig(f"outputs/figures/tsne/{pfx}.png", dpi=150)
     plt.close()
     print(f"  Saved tsne_{pfx}.png")
 
@@ -140,7 +144,7 @@ def plot_heatmap(arch, model_name, tag_map, le):
     axes[1].tick_params(labelsize=7)
 
     plt.tight_layout()
-    plt.savefig(f"outputs/figures/heatmap_{pfx}.png", dpi=150)
+    plt.savefig(f"outputs/figures/heatmap/{pfx}.png", dpi=150)
     plt.close()
     print(f"  Saved heatmap_{pfx}.png")
 
@@ -171,7 +175,7 @@ def plot_archetype(arch, model_name, tag_map, le):
     ax.set_xticks([])
     ax.set_yticks([])
     plt.tight_layout()
-    plt.savefig(f"outputs/figures/archetype_{pfx}.png", dpi=150)
+    plt.savefig(f"outputs/figures/archetype/{pfx}.png", dpi=150)
     plt.close()
 
     print(f"  {pfx} archetype top-5 champions:")
@@ -210,7 +214,7 @@ def plot_delta(arch, model_name, tag_map, le):
     ax.legend(loc="lower right", fontsize=8)
 
     plt.tight_layout()
-    plt.savefig(f"outputs/figures/delta_shift_{pfx}.png", dpi=150)
+    plt.savefig(f"outputs/figures/delta_shift/{pfx}.png", dpi=150)
     plt.close()
     print(f"  Saved delta_shift_{pfx}.png")
 
@@ -265,7 +269,7 @@ def plot_pca(arch, model_name, tag_map, le):
     plt.colorbar(sc, ax=axes[2], label="DDragon attack")
 
     plt.tight_layout()
-    plt.savefig(f"outputs/figures/pca_{pfx}.png", dpi=150)
+    plt.savefig(f"outputs/figures/pca/{pfx}.png", dpi=150)
     plt.close()
     print(f"  Saved pca_{pfx}.png")
 
