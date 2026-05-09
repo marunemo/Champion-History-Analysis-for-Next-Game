@@ -2,8 +2,10 @@ import argparse
 import torch
 import torch.nn as nn
 from tqdm import tqdm
-from src.model import DraftEmbeddingFFNN
+from src.model import DraftEmbeddingFFNN, DraftEmbeddingCNN
 from src.dataset import get_loaders
+
+ARCH_MAP = {"ffnn": DraftEmbeddingFFNN, "cnn": DraftEmbeddingCNN}
 
 
 def train_one_epoch(model, loader, optimizer, criterion, device):
@@ -37,18 +39,24 @@ def evaluate(model, loader, criterion, device):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", required=True)
-    parser.add_argument("--name", required=True, choices=["A", "B", "C"])
+    parser.add_argument("--name", required=True)
+    parser.add_argument("--arch", default="ffnn", choices=["ffnn", "cnn"])
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--batch_size", type=int, default=256)
+    parser.add_argument("--no-augment", dest="augment", action="store_false")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"[Model {args.name}] device={device}, data={args.data}")
+    print(f"[{args.arch.upper()} {args.name}] device={device}, data={args.data}, augment={args.augment}")
 
-    train_loader, val_loader = get_loaders(args.data, batch_size=args.batch_size)
-    model = DraftEmbeddingFFNN(init_weight_path="weights/embedding_init.pt").to(device)
+    train_loader, val_loader = get_loaders(
+        args.data, batch_size=args.batch_size, augment=args.augment
+    )
+
+    ModelClass = ARCH_MAP[args.arch]
+    model = ModelClass(init_weight_path="weights/embedding_init.pt").to(device)
     w_before = torch.load("weights/embedding_init.pt", weights_only=True)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
@@ -56,9 +64,9 @@ def main():
 
     best_val_loss = float("inf")
     patience_counter = 0
-    save_path = f"outputs/models/model_{args.name}.pt"
+    save_path = f"outputs/models/{args.arch}_{args.name}.pt"
 
-    pbar = tqdm(range(1, args.epochs + 1), desc=f"Model {args.name}")
+    pbar = tqdm(range(1, args.epochs + 1), desc=f"{args.arch.upper()} {args.name}")
     for epoch in pbar:
         train_loss = train_one_epoch(model, train_loader, optimizer, criterion, device)
         val_loss, val_acc = evaluate(model, val_loader, criterion, device)
@@ -74,6 +82,7 @@ def main():
             patience_counter = 0
             torch.save(
                 {
+                    "arch": args.arch,
                     "model_state_dict": model.state_dict(),
                     "w_before": w_before,
                     "best_val_loss": best_val_loss,
@@ -90,7 +99,7 @@ def main():
 
     ckpt = torch.load(save_path, weights_only=False)
     print(
-        f"\n[Model {args.name}] Best epoch {ckpt['epoch']}: "
+        f"\n[{args.arch.upper()} {args.name}] Best epoch {ckpt['epoch']}: "
         f"val_loss={ckpt['best_val_loss']:.4f}, val_acc={ckpt['best_val_acc']:.4f}"
     )
 
