@@ -16,11 +16,27 @@ League of Legends 챔피언 픽 조합(10-pick draft)으로 승패를 예측하�
 
 ### 2.1 원본 데이터
 
-| 데이터 | 출처 | 내용 |
-|--------|------|------|
-| 프로 경기 | Oracle's Elixir 2025 CSV | position="team" 행 필터, gameid 기준 Blue/Red 병합 |
-| 솔로랭크 | nathansmallcalder (Kaggle) | QueueType=CLASSIC 필터, RankTbl로 티어 매핑 |
-| 챔피언 속성 | DDragon 15.19.1 summary endpoint | champion.json (`tags`, `info`, `stats`) |
+| 데이터 | 출처 | 전처리 | 저장 위치 |
+|--------|------|--------|----------|
+| 프로 경기 | Oracle's Elixir 2025 | position="team" 행 필터, gameid 기준 Blue/Red 병합 | `data/raw/` |
+| 솔로랭크 | Kaggle: nathansmallcalder | QueueType=CLASSIC 필터, RankTbl로 티어 매핑 | `data/raw/kaggle_matches_25.19+/` |
+| 챔피언 속성 | Riot DDragon 15.19.1 | champion.json에서 tags, info, stats 추출 | `data/raw/champion.json` |
+
+#### 데이터 출처 상세
+
+1. **Riot Games Data Dragon (DDragon)**
+   - URL: `https://ddragon.leagueoflegends.com/cdn/15.19.1/data/en_US/champion.json`
+   - 패치 15.19.1 기준 챔피언 메타데이터 (태그, 능력치 정보, 기본 스탯)
+   - 취득: `wget -O champion.json "https://ddragon.leagueoflegends.com/cdn/15.19.1/data/en_US/champion.json"`
+
+2. **Oracle's Elixir — 2025 LoL Esports Match Data**
+   - 다운로드 페이지: https://oracleselixir.com/tools/downloads
+   - Google Drive: https://drive.google.com/drive/folders/1gLSw0RLjBbtaNy0dgnGQDAZOHIgCe-HH
+   - 2025 시즌 프로 대회 전 경기 데이터 (픽, 밴, KDA, 오브젝트 등)
+
+3. **Nathan Smallcalder — League of Legends(LoL) Matches Patch 25.19+**
+   - Kaggle: https://www.kaggle.com/datasets/nathansmallcalder/lol-match-history-and-summoner-data-80k-matches
+   - 솔로랭크 80K+ 매치 데이터 (MatchTbl, TeamMatchTbl, ChampionTbl, RankTbl 등)
 
 ### 2.2 챔피언 특성 행렬 (17차원)
 

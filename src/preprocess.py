@@ -4,6 +4,14 @@ LOL Draft Embedding — Preprocessing Pipeline
 DDragon 챔피언 특성 + Oracle's Elixir(프로) + Kaggle 솔로랭크 데이터를
 모델 학습용 CSV + 임베딩 초기화 weight로 변환한다.
 
+Data Sources:
+    1. Riot DDragon 15.19.1 — champion.json
+       https://ddragon.leagueoflegends.com/cdn/15.19.1/data/en_US/champion.json
+    2. Oracle's Elixir — 2025 LoL Esports Match Data
+       https://oracleselixir.com/tools/downloads
+    3. Nathan Smallcalder — LoL Matches Patch 25.19+ (Kaggle)
+       https://www.kaggle.com/datasets/nathansmallcalder/lol-match-history-and-summoner-data-80k-matches
+
 Usage:
     python src/preprocess.py          # data/raw/ → data/processed/, weights/
 """
