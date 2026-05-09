@@ -46,6 +46,8 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--batch_size", type=int, default=256)
     parser.add_argument("--no-augment", dest="augment", action="store_false")
+    parser.add_argument("--init-weights", default="weights/embedding_init.pt",
+                        help="Path to embedding init weights (default: DDragon)")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -56,8 +58,8 @@ def main():
     )
 
     ModelClass = ARCH_MAP[args.arch]
-    model = ModelClass(init_weight_path="weights/embedding_init.pt").to(device)
-    w_before = torch.load("weights/embedding_init.pt", weights_only=True)
+    model = ModelClass(init_weight_path=args.init_weights).to(device)
+    w_before = torch.load(args.init_weights, weights_only=True)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     criterion = nn.BCELoss()
