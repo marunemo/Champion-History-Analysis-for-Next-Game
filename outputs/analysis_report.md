@@ -30,6 +30,8 @@ LoL 경기의 승패는 개인 실력, 인게임 의사결정, 팀 커뮤니케�
 
 ## 1. t-SNE 클러스터 (Before/After)
 
+![t-SNE Before/After — Model B (FFNN)](figures/tsne/ffnn_B.png)
+
 ### 관찰
 
 - **Before (DDragon init)**: 모든 모델이 동일한 초기화에서 출발.
@@ -64,6 +66,14 @@ C(고티어, 2.5K)는 데이터 부족이 지배적 원인이다. 반면 D(저�
 종합하면, 임베딩 학습에는 **데이터량뿐 아니라 조합의 다양성**이 필요하며,
 B(137K, 전 티어)만이 이 두 조건을 동시에 충족한다.
 
+### 임베딩 이동 궤적 (Migration)
+
+![t-SNE Migration — Model B (FFNN)](figures/tsne/ffnn_B_migration.png)
+
+Δweight 상위 10 챔피언의 Before(×) → After(●) 이동을 화살표로 표시.
+Azir, K'Sante, Skarner 등이 DDragon 클러스터에서 크게 이탈하여
+임베딩 공간 내 새로운 위치로 이동한 것이 시각적으로 확인된다.
+
 ### FFNN vs CNN 비교
 
 두 아키텍처의 t-SNE 구조가 매우 유사하다.
@@ -75,6 +85,8 @@ FFNN은 위치를 무시하고 CNN은 위치를 고려하지만,
 ---
 
 ## 2. Archetype 클러스터링 (KMeans k=7)
+
+![Archetype Clusters — Model A (FFNN, 프로)](figures/archetype/ffnn_A.png)
 
 ### 관찰
 
@@ -123,6 +135,8 @@ A(프로)와 B(솔로 전체)의 대비도 주목할 가치가 있다.
 
 ## 3. Δweight — DDragon 대비 메타 이탈도
 
+![Δweight — Model B (FFNN)](figures/delta_shift/ffnn_B.png)
+
 ### 관찰
 
 | Model | Δ 크기 | Top 3 이탈 챔피언 | 비고 |
@@ -168,6 +182,8 @@ CNN의 Δ 분포가 FFNN과 거의 동일하다.
 
 ## 4. PCA 주성분 분석
 
+![PCA Scree + PC1 vs PC2 — Model B (FFNN)](figures/pca/ffnn_B.png)
+
 ### 관찰
 
 | PC | 분산 비율 | 해석 | 주요 DDragon 상관 |
@@ -187,6 +203,8 @@ PC2 양극단:
 ### 해석
 
 PCA는 **32차원 임베딩 공간의 잠재 구조를 인간이 해석 가능한 축으로 압축**한다.
+
+![PCA Annotated — Model B (FFNN): PC1 vs PC2, PC1 vs PC3](figures/pca/ffnn_B_annotated.png)
 
 #### PC1: 교전 접근성 — "드래프트의 가장 중요한 단일 축"
 
