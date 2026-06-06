@@ -1,0 +1,14 @@
+# Core (already in the project venv)
+pandas>=2.2
+numpy>=1.26
+scikit-learn>=1.7
+torch>=2.5
+transformers>=4.45
+# Added for this project
+xgboost>=3.2
+lightgbm>=4.6
+shap>=0.52
+umap-learn>=0.5
+matplotlib>=3.9
+seaborn>=0.13
+accelerate>=1.0

@@ -1,0 +1,13 @@
+# source data (cloned separately) and large artifacts
+repo/
+*.npy
+*.npz
+results/embeddings/
+results/models/
+results/*.log
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+# keep metrics csv, shap csv, figures (tracked)
+!results/metrics/
+!results/shap/
