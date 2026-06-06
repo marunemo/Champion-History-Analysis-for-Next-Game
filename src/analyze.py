@@ -4,9 +4,7 @@ import pickle
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn.functional as F
 import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans
@@ -100,56 +98,7 @@ def plot_tsne(arch, model_name, tag_map, le):
     print(f"  Saved tsne_{pfx}.png")
 
 
-# ---------- Analysis 2: Co-occurrence vs Affinity ----------
-
-def plot_heatmap(arch, model_name, tag_map, le):
-    _, w_after = load_checkpoint(arch, model_name)
-    df = pd.read_csv(DATA_FILES[model_name])
-    pfx = _prefix(arch, model_name)
-
-    blue_cols = [f"blue_p{i}" for i in range(1, 6)]
-    red_cols = [f"red_p{i}" for i in range(1, 6)]
-    pick_counts = pd.Series(
-        np.concatenate([df[blue_cols].values.flatten(), df[red_cols].values.flatten()])
-    ).value_counts()
-    top30 = pick_counts.head(30).index.tolist()
-
-    wins = df[df["result"] == 1]
-    n = len(top30)
-    co_matrix = np.zeros((n, n))
-    for _, row in wins.iterrows():
-        picks = [row[c] for c in blue_cols]
-        for i, pi in enumerate(top30):
-            if pi in picks:
-                for j, pj in enumerate(top30):
-                    if pj in picks and i != j:
-                        co_matrix[i, j] += 1
-    row_sums = co_matrix.sum(axis=1, keepdims=True)
-    row_sums[row_sums == 0] = 1
-    co_matrix /= row_sums
-
-    emb_top = torch.tensor(w_after[top30], dtype=torch.float32)
-    affinity = F.cosine_similarity(emb_top.unsqueeze(0), emb_top.unsqueeze(1), dim=2).numpy()
-
-    labels = [le.inverse_transform([idx])[0][:8] for idx in top30]
-
-    fig, axes = plt.subplots(1, 2, figsize=(18, 7))
-    sns.heatmap(co_matrix, ax=axes[0], xticklabels=labels, yticklabels=labels, cmap="YlOrRd", square=True)
-    axes[0].set_title(f"{pfx} — Co-occurrence (Blue wins)", fontsize=11)
-    axes[0].tick_params(labelsize=7)
-
-    sns.heatmap(affinity, ax=axes[1], xticklabels=labels, yticklabels=labels, cmap="coolwarm",
-                center=0, square=True, vmin=-1, vmax=1)
-    axes[1].set_title(f"{pfx} — Embedding Affinity (cosine)", fontsize=11)
-    axes[1].tick_params(labelsize=7)
-
-    plt.tight_layout()
-    plt.savefig(f"outputs/figures/heatmap/{pfx}.png", dpi=150)
-    plt.close()
-    print(f"  Saved heatmap_{pfx}.png")
-
-
-# ---------- Analysis 3: Archetype Clustering ----------
+# ---------- Analysis 2: Archetype Clustering ----------
 
 def plot_archetype(arch, model_name, tag_map, le):
     _, w_after = load_checkpoint(arch, model_name)
@@ -188,7 +137,7 @@ def plot_archetype(arch, model_name, tag_map, le):
     print(f"  Saved archetype_{pfx}.png")
 
 
-# ---------- Analysis 4: Delta Weight ----------
+# ---------- Analysis 3: Delta Weight ----------
 
 def plot_delta(arch, model_name, tag_map, le):
     w_before, w_after = load_checkpoint(arch, model_name)
@@ -219,7 +168,7 @@ def plot_delta(arch, model_name, tag_map, le):
     print(f"  Saved delta_shift_{pfx}.png")
 
 
-# ---------- Analysis 5: PCA ----------
+# ---------- Analysis 4: PCA ----------
 
 def plot_pca(arch, model_name, tag_map, le):
     _, w_after = load_checkpoint(arch, model_name)
@@ -274,7 +223,7 @@ def plot_pca(arch, model_name, tag_map, le):
     print(f"  Saved pca_{pfx}.png")
 
 
-# ---------- Analysis 6: PCA Annotated (PC1 vs PC2, PC1 vs PC3) ----------
+# ---------- Analysis 5: PCA Annotated (PC1 vs PC2, PC1 vs PC3) ----------
 
 def plot_pca_annotated(arch, model_name, tag_map, le):
     _, w_after = load_checkpoint(arch, model_name)
@@ -327,7 +276,7 @@ def plot_pca_annotated(arch, model_name, tag_map, le):
     print(f"  Saved pca/{pfx}_annotated.png")
 
 
-# ---------- Analysis 7: t-SNE Migration Arrows ----------
+# ---------- Analysis 6: t-SNE Migration Arrows ----------
 
 def plot_tsne_migration(arch, model_name, tag_map, le, top_k=10):
     w_before, w_after = load_checkpoint(arch, model_name)

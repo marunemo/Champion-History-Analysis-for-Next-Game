@@ -7,25 +7,31 @@ League of Legends 챔피언 드래프트(10-pick)로 승패를 예측하는 모�
 
 ```
 project/
-├── data/                          # 전처리 완료 CSV
-│   ├── df_pro_enc.csv             (10,008행 — 프로 경기)
-│   ├── df_solo_all_enc.csv        (137,146행 — 솔로랭크 전체)
-│   ├── df_solo_high_enc.csv       (2,566행 — GM+Challenger)
-│   └── df_solo_low_enc.csv        (13,984행 — Iron~Silver)
+├── data/
+│   ├── raw/                       # 원본 데이터 (champion.json만 추적, 나머지 gitignore)
+│   └── processed/                 # 전처리 완료 CSV
+│       ├── df_pro_enc.csv         (10,008행 — 프로 경기)
+│       ├── df_solo_all_enc.csv    (137,146행 — 솔로랭크 전체)
+│       ├── df_solo_high_enc.csv   (2,566행 — GM+Challenger)
+│       └── df_solo_low_enc.csv    (13,984행 — Iron~Silver)
 ├── weights/
 │   ├── embedding_init.pt          DDragon 초기화 weight (192, 32)
+│   ├── embedding_B_learned.pt     Model B 학습 임베딩 (transfer learning init)
 │   └── label_encoder.pkl          sklearn LabelEncoder (192 챔피언)
 ├── src/
+│   ├── preprocess.py              data/raw/ → data/processed/ + embedding_init.pt
 │   ├── model.py                   DraftEmbeddingFFNN + DraftEmbeddingCNN
 │   ├── dataset.py                 DraftDataset + swap augmentation
 │   ├── train.py                   학습 루프 (Adam, BCE, early stopping)
-│   └── analyze.py                 임베딩 분석 4종
+│   └── analyze.py                 임베딩 분석 6종
 ├── outputs/
-│   ├── models/                    {ffnn|cnn}_{A|B|C|D}.pt (8개)
-│   ├── figures/                   시각화 PNG (32장)
-│   ├── training_report.md         학습 결과 요약
-│   └── analysis_report.md         임베딩 분석 해석 리포트
-├── dataset/                       원본 데이터 + 전처리 노트북
+│   ├── models/
+│   │   ├── baseline/              {ffnn|cnn}_{A|B|C|D}.pt (8개)
+│   │   └── transfer/              {ffnn|cnn}_{A|C|D}_tl.pt
+│   ├── figures/                   시각화 PNG (tsne / pca / archetype / delta_shift)
+│   ├── training_report.md         학습 결과 요약 (baseline + transfer)
+│   ├── analysis_report.md         임베딩 분석 해석 리포트
+│   └── experiment_design.md       실험 설계 문서
 └── requirements.txt
 ```
 
@@ -53,12 +59,14 @@ DraftEmbeddingFFNN                          DraftEmbeddingCNN
 - Blue/Red swap augmentation (train data 2x, side-bias removed)
 - Adam lr=1e-3, BCELoss, max 30 epochs, early stopping patience=5
 
-## Embedding Analysis (4 types × 2 architectures × 4 datasets)
+## Embedding Analysis (6 types × 2 architectures × datasets)
 
 1. **t-SNE** — Before/After 비교, DDragon role 태그 6색
 2. **Archetype Clustering** — 5-pick mean-pool → KMeans(k=7), 조합 원형 분류
 3. **Delta Weight** — L2 norm(W_after - W_before), DDragon 대비 메타 이탈 상위 20
 4. **PCA** — 주성분 축 해석 + DDragon stat 상관 분석
+5. **PCA Annotated** — PC1-PC2 / PC1-PC3 축 극단 챔피언 라벨링
+6. **t-SNE Migration** — Before→After 임베딩 이동 화살표 (상위 이탈 챔피언)
 
 ## Key Findings
 
@@ -84,19 +92,27 @@ DraftEmbeddingFFNN                          DraftEmbeddingCNN
 ```bash
 pip install -r requirements.txt
 
+# (Optional) Regenerate processed CSV + embedding init from data/raw/
+python -m src.preprocess
+
 # Train (FFNN)
-python -m src.train --data data/df_pro_enc.csv --name A --arch ffnn
-python -m src.train --data data/df_solo_all_enc.csv --name B --arch ffnn
-python -m src.train --data data/df_solo_high_enc.csv --name C --arch ffnn
-python -m src.train --data data/df_solo_low_enc.csv --name D --arch ffnn
+python -m src.train --data data/processed/df_pro_enc.csv --name A --arch ffnn
+python -m src.train --data data/processed/df_solo_all_enc.csv --name B --arch ffnn
+python -m src.train --data data/processed/df_solo_high_enc.csv --name C --arch ffnn
+python -m src.train --data data/processed/df_solo_low_enc.csv --name D --arch ffnn
 
 # Train (CNN)
-python -m src.train --data data/df_pro_enc.csv --name A --arch cnn
-python -m src.train --data data/df_solo_all_enc.csv --name B --arch cnn
-python -m src.train --data data/df_solo_high_enc.csv --name C --arch cnn
-python -m src.train --data data/df_solo_low_enc.csv --name D --arch cnn
+python -m src.train --data data/processed/df_pro_enc.csv --name A --arch cnn
+python -m src.train --data data/processed/df_solo_all_enc.csv --name B --arch cnn
+python -m src.train --data data/processed/df_solo_high_enc.csv --name C --arch cnn
+python -m src.train --data data/processed/df_solo_low_enc.csv --name D --arch cnn
 
-# Analyze
-python -m src.analyze --arch ffnn --models A B C D
-python -m src.analyze --arch cnn --models A B C D
+# Transfer learning (B-learned embedding → A/C/D fine-tune)
+python -m src.train --data data/processed/df_pro_enc.csv --name A_tl --arch ffnn --init-weights weights/embedding_B_learned.pt
+python -m src.train --data data/processed/df_solo_high_enc.csv --name C_tl --arch ffnn --init-weights weights/embedding_B_learned.pt
+python -m src.train --data data/processed/df_solo_low_enc.csv --name D_tl --arch ffnn --init-weights weights/embedding_B_learned.pt
+
+# Analyze (baseline + transfer)
+python -m src.analyze --arch ffnn --models A B C D A_tl C_tl D_tl
+python -m src.analyze --arch cnn --models A B C D A_tl C_tl D_tl
 ```
