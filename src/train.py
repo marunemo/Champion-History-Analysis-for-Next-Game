@@ -1,4 +1,6 @@
 import argparse
+import random
+import numpy as np
 import torch
 import torch.nn as nn
 from tqdm import tqdm
@@ -6,6 +8,14 @@ from src.model import DraftEmbeddingFFNN, DraftEmbeddingCNN
 from src.dataset import get_loaders
 
 ARCH_MAP = {"ffnn": DraftEmbeddingFFNN, "cnn": DraftEmbeddingCNN}
+
+
+def set_seed(seed):
+    """Fix all RNGs for reproducible training (dropout, shuffle, CUDA)."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
 
 
 def train_one_epoch(model, loader, optimizer, criterion, device):
@@ -45,16 +55,18 @@ def main():
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--batch_size", type=int, default=256)
+    parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--no-augment", dest="augment", action="store_false")
     parser.add_argument("--init-weights", default="weights/embedding_init.pt",
                         help="Path to embedding init weights (default: DDragon)")
     args = parser.parse_args()
 
+    set_seed(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"[{args.arch.upper()} {args.name}] device={device}, data={args.data}, augment={args.augment}")
+    print(f"[{args.arch.upper()} {args.name}] device={device}, data={args.data}, augment={args.augment}, seed={args.seed}")
 
     train_loader, val_loader = get_loaders(
-        args.data, batch_size=args.batch_size, augment=args.augment
+        args.data, batch_size=args.batch_size, augment=args.augment, seed=args.seed
     )
 
     ModelClass = ARCH_MAP[args.arch]
