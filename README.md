@@ -237,6 +237,10 @@ Predicting a League of Legends match from its draft alone is close to a coin fli
 Yet the **embedding** a win-prediction model learns is legible — it separates champions by engagement range and solo agency, recovers an unstated range mechanic, flags champions whose meta identity has drifted from their design, and exposes a fundamental high- vs. low-tier difference in what a draft is *for*.
 The honest takeaway: **champion composition is a minor but interpretable nudge on win probability — not a predictor — and off-the-shelf LLM knowledge does not substitute for data-grounded modelling of the live meta.**
 
+---
+> # *Champion picks only nudge the odds.*
+> # *Play decides the rest.*
+
 ## 9. References
 
 **Prior work**
@@ -253,7 +257,3 @@ The honest takeaway: **champion composition is a minor but interpretable nudge o
 **Data** — Oracle's Elixir, *2025 LoL Esports Match Data* (https://oracleselixir.com); Nathan Smallcalder, *League of Legends Matches, Patch 25.19+* (Kaggle); Riot Games **Data Dragon** 15.19.1 (https://ddragon.leagueoflegends.com/cdn/15.19.1/data/en_US/champion.json).
 **Tools** — `bert-base-uncased`; **Qwen3-32B**; scikit-learn; **XGBoost**; **LightGBM**; PyTorch.
 **Code** — [`embedding-analysis/`](embedding-analysis/) (Study 2) and [`prediction-benchmark/`](prediction-benchmark/) (Study 1); extended detail in each `docs/PAPER.md`.
-
----
-> # *Champion picks only nudge the odds.*
-> # *Play decides the rest.*
