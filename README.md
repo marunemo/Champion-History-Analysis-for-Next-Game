@@ -93,7 +93,7 @@ A **transfer-learning** variant re-initialises the data-poor A/C/D from Model B'
 | Interpretation | SHAP, UMAP | t-SNE, archetypes, Δweight, PCA |
 | Datasets | pro, solo_all, solo_high | + solo_low (A/B/C/D) |
 
-Reproduction commands are in each sub-project's README; full write-ups are in [`prediction-benchmark/docs/PAPER.md`](prediction-benchmark/docs/PAPER.md) and [`embedding-analysis/docs/PAPER.md`](embedding-analysis/docs/PAPER.md).
+This page is self-contained; reproduction commands and optional extended detail live in each sub-project's README and `docs/PAPER.md` ([embedding-analysis](embedding-analysis/docs/PAPER.md), [prediction-benchmark](prediction-benchmark/docs/PAPER.md)).
 
 ## 6. Result Analysis
 
@@ -115,7 +115,25 @@ Reproduction commands are in each sub-project's README; full write-ups are in [`
 - **LLM general knowledge ≠ meta knowledge.** Qwen3-32B zero-shot ranks at chance and is badly mis-calibrated (log-loss ≈ 1.1 vs. ≈ 0.69 for a calibrated coin); on `pro` it is even below chance (AUC 0.484), consistent with professional drafts being deliberately balanced.
 - **SHAP** shows the small exploitable signal is side bias plus a short list of strong/weak champions (e.g. Zac, Kha'Zix, Darius for `pro`; Azir, K'Sante, Singed for `solo_all`).
 
+All five model families cluster in a narrow band on `solo_all`, confirming the ceiling belongs to the task, not to any one method.
+
+| Family | Best model + rep | Acc | AUC |
+|---|---|---|---|
+| linear | logreg + combo | 0.525 | 0.536 |
+| tree | xgb + bag | 0.523 | 0.532 |
+| neural | mlp + combo | 0.521 | 0.530 |
+| distance | svm_rbf + combo | 0.513 | 0.526 |
+| probabilistic | gnb + meta | 0.516 | 0.524 |
+
 ![Method comparison](prediction-benchmark/figures/compare_accuracy.png)
+*Best accuracy / AUC per method family across the three datasets.*
+
+<p align="center">
+  <img src="prediction-benchmark/figures/umap_champion_embeddings.png" width="48%">
+  <img src="prediction-benchmark/figures/calibration_solo_all.png" width="48%">
+</p>
+
+*Left: pretrained champion embeddings cluster cleanly by role, whereas the win-signal and LLM-name representations do not. Right: the zero-shot LLM is badly mis-calibrated (over-confident) next to the traditional models.*
 
 ### 6.2 Study 2 — the embedding is weak at prediction but rich in structure
 
@@ -130,6 +148,12 @@ Swap augmentation removed side bias and lifted the smallest set (**Model C 49.6%
 | D solo_low | 13,984 | 51.8% | 51.3% |
 
 Despite the flat accuracy, the **learned embedding is interpretable**, and only **Model B (137K, all tiers)** has enough data *and* draft diversity to escape its DDragon initialisation.
+
+<p align="center">
+  <img src="embedding-analysis/outputs/figures/tsne/ffnn_B.png" width="72%">
+</p>
+
+*t-SNE of Model B's champion embedding before (DDragon init) and after training: role clusters loosen as functional play-style similarity takes over.*
 
 **PCA latent axes.**
 PC1 (37–46% variance) is **engagement range** — it correlates r = **+0.82** with `attackrange`, a feature that was **never an input**, so the model recovered an unstated game mechanic from win/loss patterns alone.
