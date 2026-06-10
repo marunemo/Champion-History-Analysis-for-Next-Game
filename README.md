@@ -135,6 +135,12 @@ All five model families cluster in a narrow band on `solo_all`, confirming the c
 
 *Left: pretrained champion embeddings cluster cleanly by role, whereas the win-signal and LLM-name representations do not. Right: the zero-shot LLM is badly mis-calibrated (over-confident) next to the traditional models.*
 
+<p align="center">
+  <img src="prediction-benchmark/figures/shap_summary_solo_all.png" width="60%">
+</p>
+
+*Per-champion SHAP (XGBoost + bag) on `solo_all`: only a short list of champions, plus side bias, carries any signed contribution to the win probability.*
+
 ### 6.2 Study 2 — the embedding is weak at prediction but rich in structure
 
 Validation accuracy mirrors Study 1 (all ~51–53%), and **FFNN ≈ CNN** everywhere (< 0.003 val loss): pick-slot order p1…p5 carries no win signal — in a draft *who* is present matters, not *where*.
@@ -209,6 +215,14 @@ Across all four datasets and both architectures the same ordering recurs (data v
   <img src="embedding-analysis/outputs/figures/delta_shift/ffnn_B.png" width="48%">
 </p>
 
+*Left: PCA of Model B with PC1–PC2 / PC1–PC3 extremes labelled. Right: per-champion Δweight (deviation from DDragon init), topped by Azir, K'Sante and Skarner.*
+
+<p align="center">
+  <img src="embedding-analysis/outputs/figures/tsne/ffnn_B_migration.png" width="60%">
+</p>
+
+*t-SNE migration of the top-Δweight champions: arrows trace each champion's move from its DDragon-init position (×) to its trained position (●), confirming the same movers the Δweight ranking flags.*
+
 ### 6.3 Cross-study agreement
 Both studies independently reach the same headline: **draft alone ≈ a coin flip for the outcome**, yet **champion identity is a real, interpretable structure** — discrete champion encodings (Study 1's `bag`, Study 2's embedding) carry what little signal exists, while LLM *names-as-text* and *general knowledge* do not.
 
@@ -218,7 +232,15 @@ Predicting a League of Legends match from its draft alone is close to a coin fli
 Yet the **embedding** a win-prediction model learns is legible — it separates champions by engagement range and solo agency, recovers an unstated range mechanic, flags champions whose meta identity has drifted from their design, and exposes a fundamental high- vs. low-tier difference in what a draft is *for*.
 The honest takeaway: **champion composition is a minor but interpretable nudge on win probability — not a predictor — and off-the-shelf LLM knowledge does not substitute for data-grounded modelling of the live meta.**
 
-## 8. Repository Structure
+## 8. Limitations
+
+The embedding interpretations are correlational, not causal — PCA axes are read through their correlation with DDragon stats, not a controlled intervention.
+`solo_high` is small (test n ≈ 385), so its higher AUC (0.570) carries wide error bars; we report point estimates without confidence intervals.
+The champion-embedding initialisation was not seeded (`torch.manual_seed` unset), so `embedding_init.pt` is not bit-identically regenerable — the current file is pinned for all reported runs.
+The meaning of pick slots `p1…p5` is uncertain (pro draft order vs. solo-queue position listing), so the FFNN ≈ CNN result is a statement about *position within the slot list*, not about true draft *sequence*.
+By design the input is champion identity only — no items, runes, bans, or in-game events — which is also the reason the predictive ceiling is low.
+
+## 9. Repository Structure
 
 ```
 .
@@ -231,7 +253,7 @@ The honest takeaway: **champion composition is a minor but interpretable nudge o
     └── docs/PAPER.md
 ```
 
-## 9. References
+## 10. References
 
 **Prior work**
 - Chen, Z., Xu, Y., Nguyen, T.-H. D., Sun, Y., & Seif El-Nasr, M. (2018). *Modeling Game Avatar Synergy and Opposition through Embedding in Multiplayer Online Battle Arena Games.* arXiv:1803.10402.
