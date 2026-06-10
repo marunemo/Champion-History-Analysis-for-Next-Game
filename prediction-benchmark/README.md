@@ -8,8 +8,6 @@
 > 우연(0.50)보다 조금 높을 뿐이고, LLM의 일반 지식(Qwen3-32B 제로샷)은 사실상 우연 수준이며
 > 심하게 과신(log-loss ≈ 1.1)한다. 승부의 대부분은 드래프트가 아니라 플레이어 실력에서 결정된다.
 
-> 📄 정식 논문 형식 정리: **[docs/PAPER.md](docs/PAPER.md)** (Abstract · Methods · Results · Discussion)
-
 ---
 
 ## 1. 데이터
@@ -63,18 +61,13 @@ XGBoost + Bag-of-Champions에 TreeExplainer 적용. 피처 = 챔피언이므로 
 파인튜닝 없음. 두 팀을 보여주고 다음 토큰이 "Blue"인지 "Red"인지의 로짓을 비교 →
 확률 → **test 전체** 평가. **LLM의 일반 지식만** 사용.
 
-> ⚠️ 이 Blackwell GPU 머신은 GPU↔GPU **P2P 텐서 복사가 0으로 깨지는** 버그가 있어
-> `device_map="auto"` 분할 시 hidden state가 전부 0이 된다(원인 추적은 git 로그 참고).
-> 따라서 Qwen은 **단일 GPU에 8-bit로 적재**(≈35GB)해 우회한다.
-
 ---
 
 ## 3. 결과
 
-*(수치는 `results/metrics/all_methods.csv` · `classical.csv` 기준. `scripts/run_all.sh`로 재현)*
 
 ### 3.1 방법별 비교 (test split)
-
+전통 ML 방식은 여러 조합들중 최고 성능만 표시
 | 데이터셋 | 방법 | Acc | AUC | LogLoss | Brier |
 |---|---|---|---|---|---|
 | pro | **전통ML best: extratrees+bag** | 0.555 | 0.561 | 0.686 | 0.246 |
