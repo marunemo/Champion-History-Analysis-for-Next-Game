@@ -173,18 +173,17 @@ PC3 (13–15%) is **frontline identity** (tank vs. self-sufficient carry).
 Only B shrinks PC1 and grows PC2–PC3: with enough data the DDragon-dominated axis recedes and game-derived axes emerge.
 
 **Meta drift (Δweight).**
-Only Model B deviates meaningfully from its initialisation, by roughly 15–20× the other models; A, C and D stay put.
+Only Model B deviates meaningfully from its initialisation — by an order of magnitude (mean Δ ≈ 0.84 vs ≈ 0.04–0.09); A, C and D stay put.
 
-| Model | Δ magnitude | Top-3 deviating champions |
+| Model | mean Δ | Top-3 deviating champions |
 |---|---|---|
-| A pro | ~0.08 | Morgana, Jarvan IV, Poppy |
-| B solo_all | **~1.3** | Azir (1.75), K'Sante (1.60), Skarner (1.57) |
-| C solo_high | ~0.08 | Ashe, Zeri, Sett |
-| D solo_low | ~0.08 | (stays at DDragon init) |
+| A pro | 0.04 | Varus, Rumble, Kai'Sa |
+| B solo_all | **0.84** | Skarner (2.19), MasterYi (1.97), Azir (1.85) |
+| C solo_high | 0.06 | Zeri, Thresh, Soraka |
+| D solo_low | 0.09 | Diana, Rumble, Ziggs |
 
-Azir (DDragon "Mage") is played as a ranged-DPS / peel hybrid — the largest gap between designed and played role.
-K'Sante (DDragon "Tank") is played as a 1v1 top bruiser rather than a frontline tank.
-Skarner shifted from jungle-tank to initiator after his rework — a change DDragon does not reflect but the model captured.
+Skarner (2.19) shifted from jungle-tank to initiator after his rework — a change DDragon does not reflect but the model captured.
+Azir (1.85), a DDragon "Mage", is played as a ranged-DPS / peel hybrid — a large gap between designed and played role.
 
 **Tier philosophy (archetypes).**
 Challenger (C) drafts concentrate on assassin-divers (individual skill expression); Iron–Silver (D) converges on utility champions (executional stability) — the definition of a "good draft" is tier-dependent.
@@ -204,7 +203,7 @@ B→A is neutral because professional and solo-queue drafts are qualitatively di
 Transfer therefore depends on source–target domain distance, contradicting the assumption that scarce data always benefits from a pretrained start.
 
 **Cross-analysis consistency.**
-The champions that move most in the t-SNE migration (Azir, K'Sante, Skarner) are exactly B's top-Δweight movers, so the visual and quantitative analyses corroborate each other.
+The champions that move most in the t-SNE migration (Skarner, MasterYi, Azir) are exactly B's top-Δweight movers, so the visual and quantitative analyses corroborate each other.
 The PC2 "solo agency" axis aligns with the archetype clusters — Challenger's assassin-diver concentration sits at the high-agency end of PC2.
 Across all four datasets and both architectures the same ordering recurs (data volume > architecture; DDragon dominance in A/C/D; pro formulaic vs. solo individualistic), which lowers the risk of over-reading any single method.
 
@@ -214,7 +213,7 @@ Across all four datasets and both architectures the same ordering recurs (data v
 
 <img src="embedding-analysis/outputs/figures/delta_shift/ffnn_B.png" width="100%">
 
-*↑ Per-champion Δweight (deviation from DDragon init), topped by Azir, K'Sante and Skarner.*
+*↑ Per-champion Δweight (deviation from DDragon init), topped by Skarner, MasterYi and Azir.*
 
 <img src="embedding-analysis/outputs/figures/tsne/ffnn_B_migration.png" width="100%">
 
@@ -230,6 +229,7 @@ The embedding interpretations are correlational, not causal — PCA axes are rea
 The champion-embedding initialisation was not seeded (`torch.manual_seed` unset), so `embedding_init.pt` is not bit-identically regenerable — the current file is pinned for all reported runs.
 The meaning of pick slots `p1…p5` is uncertain (pro draft order vs. solo-queue position listing), so the FFNN ≈ CNN result is a statement about *position within the slot list*, not about true draft *sequence*.
 By design the input is champion identity only — no items, runes, bans, or in-game events — which is also the reason the predictive ceiling is low.
+A label-encoding artifact split K'Sante across two source spellings (pro `K'Sante` vs solo-queue `KSante`), so it occupied two of the 192 classes and its pro-only copy never trained; the preprocessing now canonicalises name variants.
 
 ## 8. Conclusion
 
