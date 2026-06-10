@@ -1,7 +1,7 @@
 # Can You Predict the Winner from the Draft Alone?
 ### Traditional Machine Learning vs. Large-Language-Model General Knowledge for League of Legends Win Prediction
 
-**Author:** chang · **Code:** `chang/lol_winpred` · **Data:** Champion-History-Analysis-for-Next-Game
+**Author:** chang · **Code:** `prediction-benchmark/` · **Data:** Champion-History-Analysis-for-Next-Game
 
 ---
 

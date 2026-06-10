@@ -14,8 +14,9 @@
 
 ## 1. 데이터
 
-원본: [`marunemo/Champion-History-Analysis-for-Next-Game`](https://github.com/marunemo/Champion-History-Analysis-for-Next-Game)
-의 라벨 인코딩된 CSV 3종 (`repo/dataset/preprocessed results/`). 동일한 `label_encoder.pkl`(챔피언 0–191, 실제 등장 171)로 인코딩.
+원본: 같은 저장소의 자매 프로젝트 [`../embedding-analysis/`](../embedding-analysis/)가 생성한
+라벨 인코딩 CSV 3종 (`embedding-analysis/data/processed/`). 동일한 `label_encoder.pkl`
+(`embedding-analysis/weights/`, 챔피언 0–191, 실제 등장 171)로 인코딩.
 
 | 데이터셋 | 경기 수 | 블루 승률 | 설명 |
 |---|---|---|---|
@@ -118,9 +119,10 @@ XGBoost + Bag-of-Champions에 TreeExplainer 적용. 피처 = 챔피언이므로 
 ## 4. 재현
 
 ```bash
-cd chang/lol_winpred
-bash scripts/run_all.sh        # 데이터 클론 → 전통 ML → SHAP → BERT → Qwen → 시각화
+cd prediction-benchmark
+bash scripts/run_all.sh        # 전통 ML → SHAP → BERT → Qwen → 시각화
 ```
+데이터는 자매 프로젝트 `embedding-analysis/`에서 자동 참조한다(별도 클론 불필요).
 환경: 프로젝트 venv (`/projects/PSALM/thisaint/venv`, torch 2.11+cu128, transformers 5.9),
 GPU(BERT·Qwen). 추가 패키지는 [`requirements.txt`](requirements.txt).
 
