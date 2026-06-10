@@ -40,7 +40,7 @@ Chen et al. (2018) learn synergy/opposition embeddings (a word2vec-style latent 
 In both cases the embedding is a *means* to a task (prediction, recommendation, similarity).
 
 **Our work differs in object and design.**
-(i) We learn the embedding from draft win/loss **alone** and treat the **space itself** as the object of analysis — its principal axes, its **drift from designer metadata** (Δweight against DDragon), and an unstated mechanic (`attackrange`, r = +0.82) that it recovers without ever receiving it as input.
+(i) We learn the embedding from draft win/loss **alone** and treat the **space itself** as the object of analysis — its principal axes, its **drift from designer metadata** (Δweight against DDragon), and an unstated mechanic (`attackrange`, r = +0.78) that it recovers without ever receiving it as input.
 (ii) We **compare the learned representation across player-population distributions** — professional vs. solo-rank, and across tiers — a design absent from prior work, which reports one accuracy or a single embedding per dataset.
 Because raw win/loss prediction is largely saturated (the studies above converge at ~75–77% once player- and in-game signal is included), we shift the question from *"what predicts the winner"* to *"what a draft-trained model learns about champions, and how that differs across player populations."*
 
@@ -160,7 +160,7 @@ Despite the flat accuracy, the **learned embedding is interpretable**, and only 
 *↑ t-SNE of Model B's champion embedding before (DDragon init) and after training: role clusters loosen as functional play-style similarity takes over.*
 
 **PCA latent axes.**
-PC1 (37–46% variance) is **engagement range** — it correlates r = **+0.82** with `attackrange`, a feature that was **never an input**, so the model recovered an unstated game mechanic from win/loss patterns alone.
+PC1 (37–46% variance) is **engagement range** — it correlates r = **+0.78** with `attackrange`, a feature that was **never an input**, so the model recovered an unstated game mechanic from win/loss patterns alone.
 PC2 (16–18%) is **team dependence** (solo-carry vs. team-dependent), weakly tracking low-defense / high-attack champions.
 PC3 (13–15%) is **champion difficulty** — it weakly tracks DDragon's difficulty rating (r ≈ +0.21).
 
