@@ -89,6 +89,8 @@ DraftEmbeddingFFNN                          DraftEmbeddingCNN
 
 ## Quick Start
 
+> 모든 명령은 이 폴더(`embedding-analysis/`)를 작업 디렉터리로 두고 실행합니다.
+
 ```bash
 pip install -r requirements.txt
 
