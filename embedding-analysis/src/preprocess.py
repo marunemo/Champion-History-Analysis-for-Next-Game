@@ -223,6 +223,11 @@ def build_champion_encoder(*dfs: pd.DataFrame) -> LabelEncoder:
         pd.Series(d[pick_cols].values.flatten()) for d in dfs
     ]).dropna()
 
+    # Canonicalise name-spelling variants across sources before fitting, so the
+    # same champion spelled differently by different data sources (e.g. pro
+    # "K'Sante" vs solo-queue "KSante") collapses to ONE class instead of two.
+    all_names = all_names.map(lambda s: DDRAGON_NAME_MAP.get(s, s))
+
     unique = set(all_names.unique()) - UNKNOWN_CHAMPIONS
     le = LabelEncoder()
     le.fit(sorted(unique))
@@ -238,6 +243,11 @@ def encode_draft_df(df: pd.DataFrame, le: LabelEncoder,
     pick_cols = [f"blue_p{i}" for i in range(1, 6)] + \
                 [f"red_p{i}" for i in range(1, 6)]
     known = set(le.classes_)
+    df = df.copy()
+    # Canonicalise the same way as build_champion_encoder so spelling variants
+    # map onto the unified class before membership-checking and transform.
+    for col in pick_cols:
+        df[col] = df[col].map(lambda s: DDRAGON_NAME_MAP.get(s, s))
     mask = df[pick_cols].apply(lambda col: col.isin(known)).all(axis=1)
     df = df[mask].copy()
 
