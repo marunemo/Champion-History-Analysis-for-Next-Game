@@ -1,5 +1,3 @@
 __pycache__/
-
-# Raw source data (large files, not tracked)
-data/raw/*
-!data/raw/champion.json
+*.pyc
+.ipynb_checkpoints/

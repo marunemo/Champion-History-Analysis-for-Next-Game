@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # End-to-end reproduction of the LoL draft win-prediction study.
-# Run from chang/lol_winpred/.  Uses the project venv and the cloned `repo/`.
+# Run from prediction-benchmark/.  Uses the project venv. Source data is read
+# from the sibling embedding-analysis/ project (see src/config.py).
 set -e
 cd "$(dirname "$0")/.."
 
@@ -8,10 +9,6 @@ PY=/projects/PSALM/thisaint/venv/bin/python
 export HF_HOME=/projects/PSALM/thisaint/.hf_cache
 export TOKENIZERS_PARALLELISM=false
 cd src
-
-echo "==> [0/6] clone source data if missing"
-[ -d ../repo ] || git -C .. clone \
-  https://github.com/marunemo/Champion-History-Analysis-for-Next-Game.git repo
 
 echo "==> [1/6] sanity: data + features"
 $PY data.py
