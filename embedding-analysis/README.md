@@ -3,6 +3,8 @@
 League of Legends 챔피언 드래프트(10-pick)로 승패를 예측하는 모델을 학습하고,
 학습된 **챔피언 임베딩 공간을 분석**하여 시너지, 메타 이탈, 티어별 드래프트 철학을 해석하는 프로젝트.
 
+> 📄 분석 내용을 논문 형태로 풀어 쓴 글: **[docs/PAPER.md](docs/PAPER.md)**
+
 ## Project Structure
 
 ```
@@ -32,6 +34,8 @@ project/
 │   ├── training_report.md         학습 결과 요약 (baseline + transfer)
 │   ├── analysis_report.md         임베딩 분석 해석 리포트
 │   └── experiment_design.md       실험 설계 문서
+├── docs/
+│   └── PAPER.md                   분석 내용을 논문 형태로 풀어 쓴 글 (outputs/ 리포트 기반)
 └── requirements.txt
 ```
 
