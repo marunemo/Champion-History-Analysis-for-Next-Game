@@ -10,6 +10,13 @@ from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans
 from src.model import DraftEmbeddingFFNN, DraftEmbeddingCNN
 
+# Larger default fonts so figures stay readable when projected on slides.
+plt.rcParams.update({
+    "axes.titlesize": 16, "axes.labelsize": 13,
+    "xtick.labelsize": 11, "ytick.labelsize": 11,
+    "legend.fontsize": 11, "figure.titlesize": 17,
+})
+
 # ---------- helpers ----------
 
 TAG_COLORS = {
@@ -94,13 +101,13 @@ def plot_tsne(arch, model_name, tag_map, le):
             tag = tag_map.get(idx, "Unknown")
             color = TAG_COLORS.get(tag, "#95a5a6")
             ax.scatter(coords[idx, 0], coords[idx, 1], c=color, s=20, alpha=0.7)
-        ax.set_title(title, fontsize=12)
+        ax.set_title(title, fontsize=15)
         ax.set_xticks([])
         ax.set_yticks([])
 
     for tag, color in TAG_COLORS.items():
         axes[1].scatter([], [], c=color, label=tag, s=40)
-    axes[1].legend(loc="upper right", fontsize=8)
+    axes[1].legend(loc="upper right", fontsize=12)
 
     plt.tight_layout()
     plt.savefig(f"outputs/figures/tsne/{pfx}.png", dpi=150)
@@ -142,9 +149,9 @@ def plot_archetype(arch, model_name, tag_map, le):
         top3 = pd.Series(blue_picks[mask].flatten()).value_counts().head(3).index.tolist()
         champs = ", ".join(le.inverse_transform([i])[0] for i in top3)
         ax.annotate(champs, (coords[mask, 0].mean(), coords[mask, 1].mean()),
-                    fontsize=9.5, fontweight="bold", ha="center", zorder=5,
+                    fontsize=13, fontweight="bold", ha="center", zorder=5,
                     bbox=dict(boxstyle="round,pad=0.3", fc="white", ec=cmap(k), lw=1.6, alpha=0.95))
-    ax.set_title(f"{_title(arch, model_name)} — team-composition archetypes (k=7, top champions)", fontsize=12)
+    ax.set_title(f"{_title(arch, model_name)} — team-composition archetypes (k=7, top champions)", fontsize=15)
     ax.set_xticks([])
     ax.set_yticks([])
     plt.tight_layout()
@@ -178,13 +185,13 @@ def plot_delta(arch, model_name, tag_map, le):
     fig, ax = plt.subplots(figsize=(12, 6))
     ax.barh(range(top_k), top_shift[::-1], color=top_colors[::-1])
     ax.set_yticks(range(top_k))
-    ax.set_yticklabels(top_names[::-1], fontsize=9)
-    ax.set_xlabel("L2 norm of Δweight", fontsize=10)
-    ax.set_title(f"{_title(arch, model_name)} — Top {top_k} Meta-Shifted Champions (DDragon → Learned)", fontsize=12)
+    ax.set_yticklabels(top_names[::-1], fontsize=12)
+    ax.set_xlabel("L2 norm of Δweight", fontsize=13)
+    ax.set_title(f"{_title(arch, model_name)} — Top {top_k} Meta-Shifted Champions (DDragon → Learned)", fontsize=15)
 
     for tag, color in TAG_COLORS.items():
         ax.barh([], [], color=color, label=tag)
-    ax.legend(loc="lower right", fontsize=8)
+    ax.legend(loc="lower right", fontsize=12)
 
     plt.tight_layout()
     plt.savefig(f"outputs/figures/delta_shift/{pfx}.png", dpi=150)
@@ -233,7 +240,7 @@ def plot_pca(arch, model_name, tag_map, le):
     axes[1].set_title(f"{_title(arch, model_name)} — PC1 vs PC2 (by role)")
     for tag, color in TAG_COLORS.items():
         axes[1].scatter([], [], c=color, label=tag, s=40)
-    axes[1].legend(fontsize=7, loc="upper right")
+    axes[1].legend(fontsize=12, loc="upper right")
 
     sc = axes[2].scatter(coords[:, 0], coords[:, 1], c=attack_vals, cmap="RdYlBu_r", s=25, alpha=0.7)
     axes[2].set_xlabel(f"PC1 ({evr[0]:.1%})")
@@ -276,23 +283,23 @@ def plot_pca_annotated(arch, model_name, tag_map, le):
             bot = np.argsort(coords[:, pc])[:n_label]
             for idx in np.concatenate([top, bot]):
                 ax.annotate(le.classes_[idx], (coords[idx, pc_x], coords[idx, pc_y]),
-                            fontsize=5.5, alpha=0.85, zorder=3,
+                            fontsize=9, alpha=0.85, zorder=3,
                             textcoords="offset points", xytext=(3, 3))
 
-        ax.set_xlabel(f"{pc_labels[pc_x]}  ({evr[pc_x]:.1%})", fontsize=9)
-        ax.set_ylabel(f"{pc_labels[pc_y]}  ({evr[pc_y]:.1%})", fontsize=9)
+        ax.set_xlabel(f"{pc_labels[pc_x]}  ({evr[pc_x]:.1%})", fontsize=13)
+        ax.set_ylabel(f"{pc_labels[pc_y]}  ({evr[pc_y]:.1%})", fontsize=13)
 
         for tag, color in TAG_COLORS.items():
             ax.scatter([], [], c=color, label=tag, s=40)
-        ax.legend(fontsize=6, loc="upper right")
+        ax.legend(fontsize=11, loc="upper right")
 
     fig, axes = plt.subplots(1, 2, figsize=(18, 7))
 
     _annotated_scatter(axes[0], 0, 1)
-    axes[0].set_title(f"{_title(arch, model_name)} — PC1 vs PC2 (annotated)", fontsize=11)
+    axes[0].set_title(f"{_title(arch, model_name)} — PC1 vs PC2 (annotated)", fontsize=15)
 
     _annotated_scatter(axes[1], 0, 2)
-    axes[1].set_title(f"{_title(arch, model_name)} — PC1 vs PC3 (annotated)", fontsize=11)
+    axes[1].set_title(f"{_title(arch, model_name)} — PC1 vs PC3 (annotated)", fontsize=15)
 
     plt.tight_layout()
     plt.savefig(f"outputs/figures/pca/{pfx}_annotated.png", dpi=150)
@@ -340,7 +347,7 @@ def plot_tsne_migration(arch, model_name, tag_map, le, top_k=10):
                     zorder=3)
         ax.annotate(le.classes_[idx],
                     (coords_after[idx, 0], coords_after[idx, 1]),
-                    fontsize=7, fontweight="bold", alpha=0.9, zorder=4,
+                    fontsize=10, fontweight="bold", alpha=0.9, zorder=4,
                     textcoords="offset points", xytext=(4, 4))
         # Mark before position
         ax.scatter(coords_before[idx, 0], coords_before[idx, 1],
@@ -349,9 +356,9 @@ def plot_tsne_migration(arch, model_name, tag_map, le, top_k=10):
     for tag, color in TAG_COLORS.items():
         ax.scatter([], [], c=color, label=tag, s=40)
     ax.scatter([], [], c="gray", marker="x", s=50, label="Before (init)")
-    ax.legend(fontsize=7, loc="upper right")
+    ax.legend(fontsize=12, loc="upper right")
 
-    ax.set_title(f"{_title(arch, model_name)} — Embedding Migration (Before → After)", fontsize=12)
+    ax.set_title(f"{_title(arch, model_name)} — Embedding Migration (Before → After)", fontsize=15)
     ax.set_xticks([])
     ax.set_yticks([])
 
