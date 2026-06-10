@@ -229,6 +229,10 @@ Predicting a League of Legends match from its draft alone is close to a coin fli
 Yet the **embedding** a win-prediction model learns is legible — it separates champions by engagement range and solo agency, recovers an unstated range mechanic, flags champions whose meta identity has drifted from their design, and exposes a fundamental high- vs. low-tier difference in what a draft is *for*.
 The honest takeaway: **champion composition is a minor but interpretable nudge on win probability — not a predictor — and off-the-shelf LLM knowledge does not substitute for data-grounded modelling of the live meta.**
 
+---
+> # *Champion picks only nudge the odds.*
+> # *Play decides the rest.*
+
 ## 8. Limitations
 
 The embedding interpretations are correlational, not causal — PCA axes are read through their correlation with DDragon stats, not a controlled intervention.
