@@ -125,19 +125,19 @@ All five model families cluster in a narrow band on `solo_all`, confirming the c
 | distance | svm_rbf + combo | 0.513 | 0.526 |
 | probabilistic | gnb + meta | 0.516 | 0.524 |
 
-![Method comparison](prediction-benchmark/figures/compare_accuracy.png)
+<img src="prediction-benchmark/figures/compare_accuracy.png" width="100%">
+
 *Best accuracy / AUC per method family across the three datasets.*
 
-<p align="center">
-  <img src="prediction-benchmark/figures/umap_champion_embeddings.png" width="48%">
-  <img src="prediction-benchmark/figures/calibration_solo_all.png" width="48%">
-</p>
+<img src="prediction-benchmark/figures/umap_champion_embeddings.png" width="100%">
 
-*Left: pretrained champion embeddings cluster cleanly by role, whereas the win-signal and LLM-name representations do not. Right: the zero-shot LLM is badly mis-calibrated (over-confident) next to the traditional models.*
+*Pretrained champion embeddings cluster cleanly by role, whereas the win-signal and LLM-name representations do not.*
 
-<p align="center">
-  <img src="prediction-benchmark/figures/shap_summary_solo_all.png" width="60%">
-</p>
+<img src="prediction-benchmark/figures/calibration_solo_all.png" width="100%">
+
+*The zero-shot LLM is badly mis-calibrated (over-confident) next to the traditional models.*
+
+<img src="prediction-benchmark/figures/shap_summary_solo_all.png" width="100%">
 
 *Per-champion SHAP (XGBoost + bag) on `solo_all`: only a short list of champions, plus side bias, carries any signed contribution to the win probability.*
 
@@ -155,9 +155,7 @@ Swap augmentation removed side bias and lifted the smallest set (**Model C 49.6%
 
 Despite the flat accuracy, the **learned embedding is interpretable**, and only **Model B (137K, all tiers)** has enough data *and* draft diversity to escape its DDragon initialisation.
 
-<p align="center">
-  <img src="embedding-analysis/outputs/figures/tsne/ffnn_B.png" width="72%">
-</p>
+<img src="embedding-analysis/outputs/figures/tsne/ffnn_B.png" width="100%">
 
 *t-SNE of Model B's champion embedding before (DDragon init) and after training: role clusters loosen as functional play-style similarity takes over.*
 
@@ -210,16 +208,15 @@ The champions that move most in the t-SNE migration (Azir, K'Sante, Skarner) are
 The PC2 "solo agency" axis aligns with the archetype clusters — Challenger's assassin-diver concentration sits at the high-agency end of PC2.
 Across all four datasets and both architectures the same ordering recurs (data volume > architecture; DDragon dominance in A/C/D; pro formulaic vs. solo individualistic), which lowers the risk of over-reading any single method.
 
-<p align="center">
-  <img src="embedding-analysis/outputs/figures/pca/ffnn_B_annotated.png" width="48%">
-  <img src="embedding-analysis/outputs/figures/delta_shift/ffnn_B.png" width="48%">
-</p>
+<img src="embedding-analysis/outputs/figures/pca/ffnn_B_annotated.png" width="100%">
 
-*Left: PCA of Model B with PC1–PC2 / PC1–PC3 extremes labelled. Right: per-champion Δweight (deviation from DDragon init), topped by Azir, K'Sante and Skarner.*
+*PCA of Model B with PC1–PC2 / PC1–PC3 extremes labelled.*
 
-<p align="center">
-  <img src="embedding-analysis/outputs/figures/tsne/ffnn_B_migration.png" width="60%">
-</p>
+<img src="embedding-analysis/outputs/figures/delta_shift/ffnn_B.png" width="100%">
+
+*Per-champion Δweight (deviation from DDragon init), topped by Azir, K'Sante and Skarner.*
+
+<img src="embedding-analysis/outputs/figures/tsne/ffnn_B_migration.png" width="100%">
 
 *t-SNE migration of the top-Δweight champions: arrows trace each champion's move from its DDragon-init position (×) to its trained position (●), confirming the same movers the Δweight ranking flags.*
 
