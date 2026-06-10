@@ -259,8 +259,8 @@ def plot_pca_annotated(arch, model_name, tag_map, le):
 
     pc_labels = {
         0: "PC1: Engagement Range (ranged ↔ melee)",
-        1: "PC2: Solo Agency (solo-carry ↔ team-dependent)",
-        2: "PC3: Frontline Identity (tank ↔ carry)",
+        1: "PC2: Team Dependence (solo-carry ↔ team-dependent)",
+        2: "PC3: Difficulty (low ↔ high)",
     }
 
     def _annotated_scatter(ax, pc_x, pc_y, n_label=5):

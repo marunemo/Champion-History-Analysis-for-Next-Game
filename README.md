@@ -161,14 +161,14 @@ Despite the flat accuracy, the **learned embedding is interpretable**, and only 
 
 **PCA latent axes.**
 PC1 (37–46% variance) is **engagement range** — it correlates r = **+0.82** with `attackrange`, a feature that was **never an input**, so the model recovered an unstated game mechanic from win/loss patterns alone.
-PC2 (16–18%) is **solo agency** (solo-kill/roam vs. team-dependent), with no DDragon correlate — a purely data-learned axis.
-PC3 (13–15%) is **frontline identity** (tank vs. self-sufficient carry).
+PC2 (16–18%) is **team dependence** (solo-carry vs. team-dependent), weakly tracking low-defense / high-attack champions.
+PC3 (13–15%) is **champion difficulty** — it weakly tracks DDragon's difficulty rating (r ≈ +0.21).
 
 | PC (interpretation) | A | B | C | D |
 |---|---|---|---|---|
 | PC1 — engagement range | 46.1% | **37.7%** | 46.1% | ~46% |
-| PC2 — solo agency | 18.3% | 15.6% | 18.3% | ~18% |
-| PC3 — frontline identity | 13.4% | 15.1% | 13.3% | ~13% |
+| PC2 — team dependence | 18.3% | 15.6% | 18.3% | ~18% |
+| PC3 — difficulty | 13.4% | 15.1% | 13.3% | ~13% |
 
 Only B shrinks PC1 and grows PC2–PC3: with enough data the DDragon-dominated axis recedes and game-derived axes emerge.
 
@@ -204,7 +204,7 @@ Transfer therefore depends on source–target domain distance, contradicting the
 
 **Cross-analysis consistency.**
 The champions that move most in the t-SNE migration (Skarner, MasterYi, Azir) are exactly B's top-Δweight movers, so the visual and quantitative analyses corroborate each other.
-The PC2 "solo agency" axis aligns with the archetype clusters — Challenger's assassin-diver concentration sits at the high-agency end of PC2.
+The PC2 (team-dependence) axis aligns with the archetype clusters — Challenger's assassin-divers sit at its solo-carry end.
 Across all four datasets and both architectures the same ordering recurs (data volume > architecture; DDragon dominance in A/C/D; pro formulaic vs. solo individualistic), which lowers the risk of over-reading any single method.
 
 <img src="embedding-analysis/outputs/figures/pca/ffnn_B_annotated.png" width="100%">
@@ -234,7 +234,7 @@ A label-encoding artifact split K'Sante across two source spellings (pro `K'Sant
 ## 8. Conclusion
 
 Predicting a League of Legends match from its draft alone is close to a coin flip: sixteen traditional models converge on AUC ≈ 0.54–0.57, a fine-tuned text model gains nothing over the prior, and a 32B language model's general knowledge performs at chance while being over-confident.
-Yet the **embedding** a win-prediction model learns is legible — it separates champions by engagement range and solo agency, recovers an unstated range mechanic, flags champions whose meta identity has drifted from their design, and exposes a fundamental high- vs. low-tier difference in what a draft is *for*.
+Yet the **embedding** a win-prediction model learns is legible — it separates champions by engagement range and team dependence, recovers an unstated range mechanic, flags champions whose meta identity has drifted from their design, and exposes a fundamental high- vs. low-tier difference in what a draft is *for*.
 The honest takeaway: **champion composition is a minor but interpretable nudge on win probability — not a predictor — and off-the-shelf LLM knowledge does not substitute for data-grounded modelling of the live meta.**
 
 ---
