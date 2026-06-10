@@ -127,19 +127,19 @@ All five model families cluster in a narrow band on `solo_all`, confirming the c
 
 <img src="prediction-benchmark/figures/compare_accuracy.png" width="100%">
 
-*Best accuracy / AUC per method family across the three datasets.*
+*↑ Best accuracy / AUC per method family across the three datasets.*
 
 <img src="prediction-benchmark/figures/umap_champion_embeddings.png" width="100%">
 
-*Pretrained champion embeddings cluster cleanly by role, whereas the win-signal and LLM-name representations do not.*
+*↑ Pretrained champion embeddings cluster cleanly by role, whereas the win-signal and LLM-name representations do not.*
 
 <img src="prediction-benchmark/figures/calibration_solo_all.png" width="100%">
 
-*The zero-shot LLM is badly mis-calibrated (over-confident) next to the traditional models.*
+*↑ The zero-shot LLM is badly mis-calibrated (over-confident) next to the traditional models.*
 
 <img src="prediction-benchmark/figures/shap_summary_solo_all.png" width="100%">
 
-*Per-champion SHAP (XGBoost + bag) on `solo_all`: only a short list of champions, plus side bias, carries any signed contribution to the win probability.*
+*↑ Per-champion SHAP (XGBoost + bag) on `solo_all`: only a short list of champions, plus side bias, carries any signed contribution to the win probability.*
 
 ### 6.2 Study 2 — the embedding is weak at prediction but rich in structure
 
@@ -157,7 +157,7 @@ Despite the flat accuracy, the **learned embedding is interpretable**, and only 
 
 <img src="embedding-analysis/outputs/figures/tsne/ffnn_B.png" width="100%">
 
-*t-SNE of Model B's champion embedding before (DDragon init) and after training: role clusters loosen as functional play-style similarity takes over.*
+*↑ t-SNE of Model B's champion embedding before (DDragon init) and after training: role clusters loosen as functional play-style similarity takes over.*
 
 **PCA latent axes.**
 PC1 (37–46% variance) is **engagement range** — it correlates r = **+0.82** with `attackrange`, a feature that was **never an input**, so the model recovered an unstated game mechanic from win/loss patterns alone.
@@ -210,15 +210,15 @@ Across all four datasets and both architectures the same ordering recurs (data v
 
 <img src="embedding-analysis/outputs/figures/pca/ffnn_B_annotated.png" width="100%">
 
-*PCA of Model B with PC1–PC2 / PC1–PC3 extremes labelled.*
+*↑ PCA of Model B with PC1–PC2 / PC1–PC3 extremes labelled.*
 
 <img src="embedding-analysis/outputs/figures/delta_shift/ffnn_B.png" width="100%">
 
-*Per-champion Δweight (deviation from DDragon init), topped by Azir, K'Sante and Skarner.*
+*↑ Per-champion Δweight (deviation from DDragon init), topped by Azir, K'Sante and Skarner.*
 
 <img src="embedding-analysis/outputs/figures/tsne/ffnn_B_migration.png" width="100%">
 
-*t-SNE migration of the top-Δweight champions: arrows trace each champion's move from its DDragon-init position (×) to its trained position (●), confirming the same movers the Δweight ranking flags.*
+*↑ t-SNE migration of the top-Δweight champions: arrows trace each champion's move from its DDragon-init position (×) to its trained position (●), confirming the same movers the Δweight ranking flags.*
 
 ### 6.3 Cross-study agreement
 Both studies independently reach the same headline: **draft alone ≈ a coin flip for the outcome**, yet **champion identity is a real, interpretable structure** — discrete champion encodings (Study 1's `bag`, Study 2's embedding) carry what little signal exists, while LLM *names-as-text* and *general knowledge* do not.
