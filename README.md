@@ -125,19 +125,19 @@ All five model families cluster in a narrow band on `solo_all`, confirming the c
 | distance | svm_rbf + combo | 0.513 | 0.526 |
 | probabilistic | gnb + meta | 0.516 | 0.524 |
 
-![Method comparison](prediction-benchmark/figures/compare_accuracy.png)
+<img src="prediction-benchmark/figures/compare_accuracy.png" width="100%">
+
 *Best accuracy / AUC per method family across the three datasets.*
 
-<p align="center">
-  <img src="prediction-benchmark/figures/umap_champion_embeddings.png" width="48%">
-  <img src="prediction-benchmark/figures/calibration_solo_all.png" width="48%">
-</p>
+<img src="prediction-benchmark/figures/umap_champion_embeddings.png" width="100%">
 
-*Left: pretrained champion embeddings cluster cleanly by role, whereas the win-signal and LLM-name representations do not. Right: the zero-shot LLM is badly mis-calibrated (over-confident) next to the traditional models.*
+*Pretrained champion embeddings cluster cleanly by role, whereas the win-signal and LLM-name representations do not.*
 
-<p align="center">
-  <img src="prediction-benchmark/figures/shap_summary_solo_all.png" width="60%">
-</p>
+<img src="prediction-benchmark/figures/calibration_solo_all.png" width="100%">
+
+*The zero-shot LLM is badly mis-calibrated (over-confident) next to the traditional models.*
+
+<img src="prediction-benchmark/figures/shap_summary_solo_all.png" width="100%">
 
 *Per-champion SHAP (XGBoost + bag) on `solo_all`: only a short list of champions, plus side bias, carries any signed contribution to the win probability.*
 
@@ -155,9 +155,7 @@ Swap augmentation removed side bias and lifted the smallest set (**Model C 49.6%
 
 Despite the flat accuracy, the **learned embedding is interpretable**, and only **Model B (137K, all tiers)** has enough data *and* draft diversity to escape its DDragon initialisation.
 
-<p align="center">
-  <img src="embedding-analysis/outputs/figures/tsne/ffnn_B.png" width="72%">
-</p>
+<img src="embedding-analysis/outputs/figures/tsne/ffnn_B.png" width="100%">
 
 *t-SNE of Model B's champion embedding before (DDragon init) and after training: role clusters loosen as functional play-style similarity takes over.*
 
@@ -210,33 +208,22 @@ The champions that move most in the t-SNE migration (Azir, K'Sante, Skarner) are
 The PC2 "solo agency" axis aligns with the archetype clusters — Challenger's assassin-diver concentration sits at the high-agency end of PC2.
 Across all four datasets and both architectures the same ordering recurs (data volume > architecture; DDragon dominance in A/C/D; pro formulaic vs. solo individualistic), which lowers the risk of over-reading any single method.
 
-<p align="center">
-  <img src="embedding-analysis/outputs/figures/pca/ffnn_B_annotated.png" width="48%">
-  <img src="embedding-analysis/outputs/figures/delta_shift/ffnn_B.png" width="48%">
-</p>
+<img src="embedding-analysis/outputs/figures/pca/ffnn_B_annotated.png" width="100%">
 
-*Left: PCA of Model B with PC1–PC2 / PC1–PC3 extremes labelled. Right: per-champion Δweight (deviation from DDragon init), topped by Azir, K'Sante and Skarner.*
+*PCA of Model B with PC1–PC2 / PC1–PC3 extremes labelled.*
 
-<p align="center">
-  <img src="embedding-analysis/outputs/figures/tsne/ffnn_B_migration.png" width="60%">
-</p>
+<img src="embedding-analysis/outputs/figures/delta_shift/ffnn_B.png" width="100%">
+
+*Per-champion Δweight (deviation from DDragon init), topped by Azir, K'Sante and Skarner.*
+
+<img src="embedding-analysis/outputs/figures/tsne/ffnn_B_migration.png" width="100%">
 
 *t-SNE migration of the top-Δweight champions: arrows trace each champion's move from its DDragon-init position (×) to its trained position (●), confirming the same movers the Δweight ranking flags.*
 
 ### 6.3 Cross-study agreement
 Both studies independently reach the same headline: **draft alone ≈ a coin flip for the outcome**, yet **champion identity is a real, interpretable structure** — discrete champion encodings (Study 1's `bag`, Study 2's embedding) carry what little signal exists, while LLM *names-as-text* and *general knowledge* do not.
 
-## 7. Conclusion
-
-Predicting a League of Legends match from its draft alone is close to a coin flip: sixteen traditional models converge on AUC ≈ 0.54–0.57, a fine-tuned text model gains nothing over the prior, and a 32B language model's general knowledge performs at chance while being over-confident.
-Yet the **embedding** a win-prediction model learns is legible — it separates champions by engagement range and solo agency, recovers an unstated range mechanic, flags champions whose meta identity has drifted from their design, and exposes a fundamental high- vs. low-tier difference in what a draft is *for*.
-The honest takeaway: **champion composition is a minor but interpretable nudge on win probability — not a predictor — and off-the-shelf LLM knowledge does not substitute for data-grounded modelling of the live meta.**
-
----
-> # *Champion picks only nudge the odds.*
-> # *Play decides the rest.*
-
-## 8. Limitations
+## 7. Limitations
 
 The embedding interpretations are correlational, not causal — PCA axes are read through their correlation with DDragon stats, not a controlled intervention.
 `solo_high` is small (test n ≈ 385), so its higher AUC (0.570) carries wide error bars; we report point estimates without confidence intervals.
@@ -244,20 +231,13 @@ The champion-embedding initialisation was not seeded (`torch.manual_seed` unset)
 The meaning of pick slots `p1…p5` is uncertain (pro draft order vs. solo-queue position listing), so the FFNN ≈ CNN result is a statement about *position within the slot list*, not about true draft *sequence*.
 By design the input is champion identity only — no items, runes, bans, or in-game events — which is also the reason the predictive ceiling is low.
 
-## 9. Repository Structure
+## 8. Conclusion
 
-```
-.
-├── README.md                 this submission write-up
-├── embedding-analysis/       Study 2 — learned-embedding interpretation (data producer)
-│   ├── src/ outputs/ data/ weights/
-│   └── docs/PAPER.md
-└── prediction-benchmark/     Study 1 — ML vs. LLM prediction benchmark (data consumer)
-    ├── src/ figures/ results/
-    └── docs/PAPER.md
-```
+Predicting a League of Legends match from its draft alone is close to a coin flip: sixteen traditional models converge on AUC ≈ 0.54–0.57, a fine-tuned text model gains nothing over the prior, and a 32B language model's general knowledge performs at chance while being over-confident.
+Yet the **embedding** a win-prediction model learns is legible — it separates champions by engagement range and solo agency, recovers an unstated range mechanic, flags champions whose meta identity has drifted from their design, and exposes a fundamental high- vs. low-tier difference in what a draft is *for*.
+The honest takeaway: **champion composition is a minor but interpretable nudge on win probability — not a predictor — and off-the-shelf LLM knowledge does not substitute for data-grounded modelling of the live meta.**
 
-## 10. References
+## 9. References
 
 **Prior work**
 - Chen, Z., Xu, Y., Nguyen, T.-H. D., Sun, Y., & Seif El-Nasr, M. (2018). *Modeling Game Avatar Synergy and Opposition through Embedding in Multiplayer Online Battle Arena Games.* arXiv:1803.10402.
@@ -265,11 +245,15 @@ By design the input is champion identity only — no items, runes, bans, or in-g
 - Chowdhury, S., Ahsan, M., & Barraclough, P. (2025). *Applications of Linear and Ensemble-Based Machine Learning for Predicting Winning Teams in League of Legends.* Applied Sciences, 15(10), 5241. https://doi.org/10.3390/app15105241.
 - avinot244. *League-of-Legends-Champions-Corpus* (LLaMA-based champion embeddings via triplet loss). GitHub. https://github.com/avinot244/League-of-Legends-Champions-Corpus.
 
-**Data**
-- Oracle's Elixir, *2025 LoL Esports Match Data* (https://oracleselixir.com); Nathan Smallcalder, *League of Legends Matches, Patch 25.19+* (Kaggle); Riot Games **Data Dragon** 15.19.1 (https://ddragon.leagueoflegends.com/cdn/15.19.1/data/en_US/champion.json).
+**Methods**
+- SHAP — Lundberg & Lee (2017); UMAP — McInnes et al. (2018); t-SNE — van der Maaten & Hinton (2008).
 
-**Models / tooling**
-- `bert-base-uncased`; **Qwen3-32B**; scikit-learn; **XGBoost**; **LightGBM**; PyTorch; **SHAP** (Lundberg & Lee, 2017); **UMAP** (McInnes et al., 2018); t-SNE (van der Maaten & Hinton, 2008).
+## 10. Data & Tools
 
-**Detailed write-ups**
-- [`embedding-analysis/docs/PAPER.md`](embedding-analysis/docs/PAPER.md), [`prediction-benchmark/docs/PAPER.md`](prediction-benchmark/docs/PAPER.md).
+**Data** — Oracle's Elixir, *2025 LoL Esports Match Data* (https://oracleselixir.com); Nathan Smallcalder, *League of Legends Matches, Patch 25.19+* (Kaggle); Riot Games **Data Dragon** 15.19.1 (https://ddragon.leagueoflegends.com/cdn/15.19.1/data/en_US/champion.json).
+**Tools** — `bert-base-uncased`; **Qwen3-32B**; scikit-learn; **XGBoost**; **LightGBM**; PyTorch.
+**Code** — [`embedding-analysis/`](embedding-analysis/) (Study 2) and [`prediction-benchmark/`](prediction-benchmark/) (Study 1); extended detail in each `docs/PAPER.md`.
+
+---
+> # *Champion picks only nudge the odds.*
+> # *Play decides the rest.*
