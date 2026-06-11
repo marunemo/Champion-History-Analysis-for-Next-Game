@@ -1,7 +1,12 @@
 # Win Prediction and Champion-Embedding Interpretation of League of Legends Drafts
 ### A Weak but Interpretable Signal — Benchmarking Traditional ML vs. LLMs and Reading the Learned Embedding Space
 
-**Team LOL CHANG** — Seonghyun Lee (22631006), Yunseong Choi (22631009)
+**Team LOL CHANG** · *Introduction to Deep Learning* (ECE40035 / ECEA0635), Handong Global University · Instructor: Heeyoul "Henry" Choi
+
+| Member | ID | Email |
+|---|---|---|
+| **Seonghyun Lee** | 22631006 | thisaint@handong.ac.kr |
+| **Yunseong Choi** | 22631009 | yunseong.choi@handong.ac.kr |
 
 ---
 
