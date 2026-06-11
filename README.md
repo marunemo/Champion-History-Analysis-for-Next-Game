@@ -79,6 +79,10 @@ A `(192, 32)` champion embedding, initialised from the DDragon projection and tr
 - **FFNN** (~105K params): embed all ten picks, **concatenate** (320-d), MLP → sigmoid. Pick-slot order is ignored.
 - **1-D CNN** (~23K params): treat the ten picks as a `(32, 10)` sequence, `Conv1d→Conv1d→AdaptiveAvgPool` → sigmoid. Captures local adjacency.
 
+<img src="embedding-analysis/outputs/figures/architecture.png" width="100%">
+
+*↑ A shared champion embedding read two ways — position-agnostic FFNN vs. sequence CNN — both ending in a single win probability.*
+
 Training: Adam (1e-3), BCELoss, ≤30 epochs, early stopping (patience 5), 80/20 split (seed 42), with **blue/red swap augmentation** (mirror every `(blue,red,win)` to `(red,blue,loss)`) to remove side bias.
 The learned embedding is then analysed with **t-SNE** (before/after, role-coloured), **KMeans archetypes** (k=7 over mean-pooled 5-picks), **Δweight** (`‖W_after−W_before‖₂` per champion), and **PCA** (axes correlated against DDragon stats).
 A **transfer-learning** variant re-initialises the data-poor A/C/D from Model B's learned embedding.
